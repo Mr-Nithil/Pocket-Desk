@@ -12,8 +12,18 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({required this.mockAuthDatasource});
 
   @override
-  Future<Either<Failure, User>> getCurrentUser() {
-    throw UnimplementedError();
+  Future<Either<Failure, User>> getCurrentUser() async {
+    try {
+      final user = await mockAuthDatasource.getCurrentUserData();
+
+      if (user == null) {
+        return Left(Failure("User not logged in !"));
+      }
+
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
   }
 
   @override

@@ -1,17 +1,24 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:pocket_desk/core/entities/user.dart';
+import 'package:pocket_desk/core/usecases/usecase.dart';
 import 'package:pocket_desk/features/auth/domain/usecases/user_login.dart';
+import 'package:pocket_desk/features/auth/domain/usecases/user_status_check.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final UserLogin _userLogin;
-  AuthBloc({required UserLogin userLogin})
-    : _userLogin = userLogin,
-      super(AuthInitial()) {
+  final UserStatusCheck _userStatusCheck;
+  AuthBloc({
+    required UserLogin userLogin,
+    required UserStatusCheck userStatusCheck,
+  }) : _userLogin = userLogin,
+       _userStatusCheck = userStatusCheck,
+       super(AuthInitial()) {
     on<AuthLogin>(_onAuthLogin);
+    on<AuthCheckState>(_onAuthCheckState);
   }
 
   void _onAuthLogin(AuthLogin event, Emitter<AuthState> emit) async {
@@ -22,6 +29,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     res.fold(
       (l) => emit(AuthError(l.message)),
+      (r) => emit(AuthAuthenticated(r)),
+    );
+  }
+
+  void _onAuthCheckState(AuthCheckState event, Emitter<AuthState> emit) async {
+    final res = await _userStatusCheck(NoParams());
+
+    res.fold(
+      (l) => emit(AuthUnauthenticated()),
       (r) => emit(AuthAuthenticated(r)),
     );
   }

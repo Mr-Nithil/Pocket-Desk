@@ -21,8 +21,19 @@ class MockAuthDataSourceImpl implements MockAuthDatasource {
   MockAuthDataSourceImpl({required this.sharedPreferences});
 
   @override
-  Future<UserModel?> getCurrentUserData() {
-    throw UnimplementedError();
+  Future<UserModel?> getCurrentUserData() async {
+    try {
+      final email = sharedPreferences.getString('user_email');
+      final name = sharedPreferences.getString('user_name');
+
+      if (email != null && name != null) {
+        final user = UserModel(name: name, email: email);
+        return user;
+      }
+      return null;
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 
   @override
@@ -36,11 +47,6 @@ class MockAuthDataSourceImpl implements MockAuthDatasource {
       await sharedPreferences.setBool('is_logged_in', true);
       await sharedPreferences.setString('user_email', user.email);
       await sharedPreferences.setString('user_name', user.name);
-
-      print("-------------");
-      print(sharedPreferences.getBool('is_logged_in'));
-      print(sharedPreferences.getString('user_email'));
-      print(sharedPreferences.getString('user_name'));
 
       return user;
     } catch (e) {
