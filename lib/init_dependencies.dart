@@ -3,6 +3,7 @@ import 'package:pocket_desk/features/auth/data/datasources/mock_auth_datasource.
 import 'package:pocket_desk/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:pocket_desk/features/auth/domain/repository/auth_repository.dart';
 import 'package:pocket_desk/features/auth/domain/usecases/user_login.dart';
+import 'package:pocket_desk/features/auth/domain/usecases/user_logout.dart';
 import 'package:pocket_desk/features/auth/domain/usecases/user_status_check.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,10 +35,15 @@ void _initAuth() {
     () => UserStatusCheck(authRepository: serviceLocator()),
   );
 
+  serviceLocator.registerFactory(
+    () => UserLogout(authRepository: serviceLocator()),
+  );
+
   serviceLocator.registerLazySingleton(
     () => AuthBloc(
       userLogin: serviceLocator(),
       userStatusCheck: serviceLocator(),
+      userLogout: serviceLocator(),
     ),
   );
 }

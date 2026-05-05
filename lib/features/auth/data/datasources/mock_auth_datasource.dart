@@ -12,7 +12,7 @@ abstract interface class MockAuthDatasource {
 
   Future<UserModel?> getCurrentUserData();
 
-  Future<void> signOut();
+  Future<void> logout();
 }
 
 class MockAuthDataSourceImpl implements MockAuthDatasource {
@@ -55,7 +55,13 @@ class MockAuthDataSourceImpl implements MockAuthDatasource {
   }
 
   @override
-  Future<void> signOut() {
-    throw UnimplementedError();
+  Future<void> logout() async {
+    try {
+      await sharedPreferences.remove('is_logged_in');
+      await sharedPreferences.remove('user_email');
+      await sharedPreferences.remove('user_name');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 }

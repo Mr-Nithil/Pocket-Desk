@@ -44,7 +44,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> signOut() {
-    throw UnimplementedError();
+  Future<Either<Failure, void>> logout() async {
+    try {
+      await mockAuthDatasource.logout();
+      return Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
   }
 }
