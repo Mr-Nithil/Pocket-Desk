@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pocket_desk/config/theme/theme.dart';
 import 'package:pocket_desk/features/auth/presentation/pages/login_page.dart';
 
 void main() {
@@ -12,8 +13,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+      debugShowCheckedModeBanner: false,
+      title: 'PocketDesk',
+      theme: AppTheme.lightThemeMode,
+      darkTheme: AppTheme.darkThemeMode,
       home: LoginPage(),
     );
   }
