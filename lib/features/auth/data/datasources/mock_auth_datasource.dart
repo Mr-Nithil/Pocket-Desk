@@ -2,7 +2,6 @@ import 'package:pocket_desk/core/error/exception.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pocket_desk/features/auth/data/models/user_model.dart';
-import 'package:uuid/uuid.dart';
 
 abstract interface class MockAuthDatasource {
   Future<UserModel> loginWithEmailPassword({

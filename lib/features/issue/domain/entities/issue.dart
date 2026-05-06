@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 
@@ -28,11 +29,11 @@ class Issue {
     required this.id,
     required this.userId,
     required this.title,
-    required this.description,
-    required this.status,
-    required this.priority,
+    this.description,
+    this.status = IssueStatus.open,
+    this.priority = IssuePriority.medium,
     required this.createdAt,
-    required this.updatedAt,
-    required this.optionalAssignee,
+    this.updatedAt,
+    this.optionalAssignee,
   });
 }

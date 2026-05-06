@@ -82,7 +82,7 @@ class IssueModel extends Issue {
 
   @override
   String toString() {
-    return 'Issue(id: $id,userId: $userId ,title: $title, description: $description, status: $status, priority: $priority, createdAt: $createdAt, updatedAt: $updatedAt, optionalAssignee: $optionalAssignee)';
+    return 'Issue(id: $id, userId: $userId, title: $title, description: $description, status: $status, priority: $priority, createdAt: $createdAt, updatedAt: $updatedAt, optionalAssignee: $optionalAssignee)';
   }
 
   @override
