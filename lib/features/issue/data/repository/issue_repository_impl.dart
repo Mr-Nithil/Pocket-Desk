@@ -1,22 +1,47 @@
 import 'package:fpdart/src/either.dart';
+import 'package:pocket_desk/core/error/exception.dart';
 import 'package:pocket_desk/core/error/failure.dart';
+import 'package:pocket_desk/features/issue/data/datasources/issue_local_datasource.dart';
+import 'package:pocket_desk/features/issue/data/mappers/issue_mapper.dart';
+import 'package:pocket_desk/features/issue/data/models/issue_model.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/domain/repository/issue_repository.dart';
+import 'package:uuid/uuid.dart';
 
 class IssueRepositoryImpl implements IssueRepository {
+  final IssueLocalDatasource issueLocalDatasource;
+
+  IssueRepositoryImpl({required this.issueLocalDatasource});
   @override
   Future<Either<Failure, Issue>> addIssue({
     required String userId,
     required String title,
-    String? description,
-    IssueStatus? status,
-    IssuePriority? priority,
-    String? optionalAssignee,
-  }) {
-    // TODO: implement addIssue
-    throw UnimplementedError();
+    required String? description,
+    required IssueStatus? status,
+    required IssuePriority? priority,
+    required String? optionalAssignee,
+  }) async {
+    try {
+      final issue = IssueModel(
+        id: Uuid().v4(),
+        userId: userId,
+        title: title,
+        description: description ?? "",
+        status: status!.toData(),
+        priority: priority!.toData(),
+        optionalAssignee: optionalAssignee ?? "",
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      final createdIssue = await issueLocalDatasource.addIssue(issue);
+
+      return right(createdIssue.toEntity());
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
   }
 
   @override

@@ -1,3 +1,5 @@
+import 'package:hive/hive.dart';
+import 'package:pocket_desk/core/error/exception.dart';
 import 'package:pocket_desk/features/issue/data/models/issue_model.dart';
 
 abstract interface class IssueLocalDatasource {
@@ -8,10 +10,18 @@ abstract interface class IssueLocalDatasource {
 }
 
 class IssueLocalDatasourceImpl implements IssueLocalDatasource {
+  final Box<IssueModel> issueBox;
+
+  IssueLocalDatasourceImpl({required this.issueBox});
+
   @override
-  Future<IssueModel> addIssue(IssueModel issue) {
-    // TODO: implement addIssue
-    throw UnimplementedError();
+  Future<IssueModel> addIssue(IssueModel issue) async {
+    try {
+      await issueBox.put(issue.id, issue);
+      return issue;
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 
   @override

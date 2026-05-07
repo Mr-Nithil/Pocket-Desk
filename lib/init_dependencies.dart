@@ -7,9 +7,14 @@ import 'package:pocket_desk/features/auth/domain/usecases/user_login.dart';
 import 'package:pocket_desk/features/auth/domain/usecases/user_logout.dart';
 import 'package:pocket_desk/features/auth/domain/usecases/user_status_check.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
-import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
-import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
+import 'package:pocket_desk/features/issue/data/datasources/issue_local_datasource.dart';
+import 'package:pocket_desk/features/issue/data/models/issue_model.dart';
+import 'package:pocket_desk/features/issue/data/models/issue_priority.dart';
+import 'package:pocket_desk/features/issue/data/models/issue_status.dart';
+import 'package:pocket_desk/features/issue/data/repository/issue_repository_impl.dart';
+import 'package:pocket_desk/features/issue/domain/repository/issue_repository.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
+import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final serviceLocator = GetIt.instance;
@@ -22,6 +27,7 @@ Future<void> initDependencies() async {
   await _initHive();
 
   _initAuth();
+  _initIssue();
 }
 
 Future<void> _initHive() async {
@@ -29,11 +35,11 @@ Future<void> _initHive() async {
 
   Hive.registerAdapter(IssueStatusAdapter());
   Hive.registerAdapter(IssuePriorityAdapter());
-  Hive.registerAdapter(IssueAdapter());
+  Hive.registerAdapter(IssueModelAdapter());
 
-  final issueBox = await Hive.openBox<Issue>('issues');
+  final issueBox = await Hive.openBox<IssueModel>('issues');
 
-  serviceLocator.registerLazySingleton<Box<Issue>>(() => issueBox);
+  serviceLocator.registerLazySingleton<Box<IssueModel>>(() => issueBox);
 }
 
 void _initAuth() {
@@ -63,5 +69,23 @@ void _initAuth() {
       userStatusCheck: serviceLocator(),
       userLogout: serviceLocator(),
     ),
+  );
+}
+
+void _initIssue() {
+  serviceLocator.registerLazySingleton<IssueLocalDatasource>(
+    () => IssueLocalDatasourceImpl(issueBox: serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton<IssueRepository>(
+    () => IssueRepositoryImpl(issueLocalDatasource: serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => IssueCreate(issueRepository: serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton(
+    () => IssueBloc(issueCreate: serviceLocator()),
   );
 }

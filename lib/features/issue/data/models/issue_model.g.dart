@@ -1,22 +1,22 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'issue.dart';
+part of 'issue_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class IssueAdapter extends TypeAdapter<Issue> {
+class IssueModelAdapter extends TypeAdapter<IssueModel> {
   @override
   final int typeId = 2;
 
   @override
-  Issue read(BinaryReader reader) {
+  IssueModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Issue(
+    return IssueModel(
       id: fields[0] as String,
       userId: fields[1] as String,
       title: fields[2] as String,
@@ -30,7 +30,7 @@ class IssueAdapter extends TypeAdapter<Issue> {
   }
 
   @override
-  void write(BinaryWriter writer, Issue obj) {
+  void write(BinaryWriter writer, IssueModel obj) {
     writer
       ..writeByte(9)
       ..writeByte(0)
@@ -59,7 +59,7 @@ class IssueAdapter extends TypeAdapter<Issue> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is IssueAdapter &&
+      other is IssueModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
