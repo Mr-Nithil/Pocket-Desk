@@ -66,13 +66,37 @@ class IssueRepositoryImpl implements IssueRepository {
   @override
   Future<Either<Failure, Issue>> updateIssues({
     required String id,
+    required String userId,
     required String title,
-    String? description,
-    IssueStatus? status,
-    IssuePriority? priority,
-    String? optionalAssignee,
-  }) {
-    // TODO: implement updateIssues
-    throw UnimplementedError();
+    required String? description,
+    required IssueStatus? status,
+    required IssuePriority? priority,
+    required String? optionalAssignee,
+  }) async {
+    try {
+      final existingIssue = issueLocalDatasource
+          .getIssues(userId)
+          .firstWhere((issue) => issue.id == id);
+
+      final updatedIssue = existingIssue.copyWith(
+        title: title,
+        description: description,
+        status: status!.toData(),
+        priority: priority!.toData(),
+        optionalAssignee: optionalAssignee,
+        updatedAt: DateTime.now(),
+      );
+
+      final result = await issueLocalDatasource.updateIssue(
+        updatedIssue,
+        userId,
+      );
+
+      return right(result.toEntity());
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
   }
 }

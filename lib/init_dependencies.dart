@@ -15,6 +15,7 @@ import 'package:pocket_desk/features/issue/data/repository/issue_repository_impl
 import 'package:pocket_desk/features/issue/domain/repository/issue_repository.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_update.dart';
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -90,10 +91,15 @@ void _initIssue() {
     () => IssueFetchAll(issueRepository: serviceLocator()),
   );
 
+  serviceLocator.registerFactory(
+    () => IssueUpdate(issueRepository: serviceLocator()),
+  );
+
   serviceLocator.registerLazySingleton(
     () => IssueBloc(
       issueCreate: serviceLocator(),
       issueFetchAll: serviceLocator(),
+      issueUpdate: serviceLocator(),
     ),
   );
 }

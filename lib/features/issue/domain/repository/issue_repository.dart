@@ -17,10 +17,11 @@ abstract interface class IssueRepository {
   Future<Either<Failure, void>> deleteIssue({required String id});
   Future<Either<Failure, Issue>> updateIssues({
     required String id,
+    required String userId,
     required String title,
-    String? description,
-    IssueStatus? status,
-    IssuePriority? priority,
-    String? optionalAssignee,
+    required String? description,
+    required IssueStatus? status,
+    required IssuePriority? priority,
+    required String? optionalAssignee,
   });
 }

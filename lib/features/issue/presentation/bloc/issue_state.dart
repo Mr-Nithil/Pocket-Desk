@@ -13,6 +13,12 @@ class IssueCreated extends IssueState {
   IssueCreated(this.issue);
 }
 
+class IssueUpdated extends IssueState {
+  final Issue issue;
+
+  IssueUpdated(this.issue);
+}
+
 class IssueLoaded extends IssueState {
   final List<Issue> issues;
 

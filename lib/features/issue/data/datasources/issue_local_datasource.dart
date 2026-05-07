@@ -5,8 +5,8 @@ import 'package:pocket_desk/features/issue/data/models/issue_model.dart';
 abstract interface class IssueLocalDatasource {
   List<IssueModel> getIssues(String userId);
   Future<IssueModel> addIssue(IssueModel issue);
-  Future<void> deleteIssue(String id);
-  Future<IssueModel> updateIssue(IssueModel issue);
+  Future<void> deleteIssue(String id, String userId);
+  Future<IssueModel> updateIssue(IssueModel issue, String userId);
 }
 
 class IssueLocalDatasourceImpl implements IssueLocalDatasource {
@@ -25,7 +25,7 @@ class IssueLocalDatasourceImpl implements IssueLocalDatasource {
   }
 
   @override
-  Future<void> deleteIssue(String id) {
+  Future<void> deleteIssue(String id, String userId) {
     // TODO: implement deleteIssue
     throw UnimplementedError();
   }
@@ -44,8 +44,21 @@ class IssueLocalDatasourceImpl implements IssueLocalDatasource {
   }
 
   @override
-  Future<IssueModel> updateIssue(IssueModel issue) {
-    // TODO: implement updateIssue
-    throw UnimplementedError();
+  Future<IssueModel> updateIssue(IssueModel issue, String userId) async {
+    try {
+      if (issue.userId != userId) {
+        throw ServerException("Unauthorized to update!");
+      }
+      final key = issueBox.keys.firstWhere(
+        (k) => issueBox.get(k)?.id == issue.id,
+        orElse: () => throw Exception('Issue not found'),
+      );
+
+      await issueBox.put(key, issue);
+
+      return issue;
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 }
