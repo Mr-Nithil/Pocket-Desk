@@ -32,8 +32,15 @@ class IssueLocalDatasourceImpl implements IssueLocalDatasource {
 
   @override
   List<IssueModel> getIssues(String userId) {
-    // TODO: implement getIssues
-    throw UnimplementedError();
+    try {
+      final issues = issueBox.values
+          .where((issue) => issue.userId == userId)
+          .toList();
+
+      return issues;
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 
   @override

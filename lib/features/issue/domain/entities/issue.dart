@@ -22,4 +22,9 @@ class Issue {
     this.updatedAt,
     this.optionalAssignee,
   });
+
+  @override
+  String toString() {
+    return 'Issue(id: $id, userId: $userId, title: $title, description: $description, status: $status, priority: $priority, createdAt: $createdAt, updatedAt: $updatedAt, optionalAssignee: $optionalAssignee)';
+  }
 }

@@ -20,3 +20,9 @@ class AddIssueEvent extends IssueEvent {
     required this.optionalAssignee,
   });
 }
+
+class LoadIssuesEvent extends IssueEvent {
+  final String userId;
+
+  LoadIssuesEvent({required this.userId});
+}

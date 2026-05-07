@@ -51,9 +51,16 @@ class IssueRepositoryImpl implements IssueRepository {
   }
 
   @override
-  Future<Either<Failure, List<Issue>>> getIssues({required String userId}) {
-    // TODO: implement getIssues
-    throw UnimplementedError();
+  Future<Either<Failure, List<Issue>>> getIssues({
+    required String userId,
+  }) async {
+    try {
+      final issues = issueLocalDatasource.getIssues(userId);
+
+      return right(issues.map((issue) => issue.toEntity()).toList());
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
   }
 
   @override

@@ -12,6 +12,7 @@ import 'package:pocket_desk/features/issue/data/repository/issue_repository_impl
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,7 @@ void main() {
     late IssueLocalDatasourceImpl localDatasource;
     late IssueRepositoryImpl repository;
     late IssueCreate issueCreate;
+    late IssueFetchAll issueFetchAll;
 
     setUpAll(() async {
       tempDir = await Directory.systemTemp.createTemp();
@@ -33,6 +35,7 @@ void main() {
       localDatasource = IssueLocalDatasourceImpl(issueBox: issueBox);
       repository = IssueRepositoryImpl(issueLocalDatasource: localDatasource);
       issueCreate = IssueCreate(issueRepository: repository);
+      issueFetchAll = IssueFetchAll(issueRepository: repository);
     });
 
     tearDownAll(() async {
@@ -56,6 +59,18 @@ void main() {
       expect(issues.length, 1);
       expect(issues.first.title, 'Test Issue');
       expect(issues.first.userId, 'user1');
+    });
+
+    test('should fetch issues from Hive box', () async {
+      final params = IssueFetchAllParams(userId: "user1");
+      final result = await issueFetchAll(params);
+      expect(result.isRight(), true);
+      result.fold((_) => fail('Should not fail'), (issues) {
+        print('Fetched issues: $issues');
+        expect(issues.length, 1);
+        expect(issues.first.title, 'Test Issue');
+        expect(issues.first.userId, 'user1');
+      });
     });
   });
 }
