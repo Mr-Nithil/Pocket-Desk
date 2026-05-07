@@ -52,6 +52,8 @@ extension IssueStatusDataMapper on data.IssueStatus {
         return domain.IssueStatus.inProgress;
       case data.IssueStatus.resolved:
         return domain.IssueStatus.resolved;
+      case data.IssueStatus.closed:
+        return domain.IssueStatus.closed;
     }
   }
 }
@@ -65,6 +67,8 @@ extension IssueStatusDomainMapper on domain.IssueStatus {
         return data.IssueStatus.inProgress;
       case domain.IssueStatus.resolved:
         return data.IssueStatus.resolved;
+      case domain.IssueStatus.closed:
+        return data.IssueStatus.closed;
     }
   }
 }

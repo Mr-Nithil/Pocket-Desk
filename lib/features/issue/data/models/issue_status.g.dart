@@ -19,6 +19,8 @@ class IssueStatusAdapter extends TypeAdapter<IssueStatus> {
         return IssueStatus.inProgress;
       case 2:
         return IssueStatus.resolved;
+      case 3:
+        return IssueStatus.closed;
       default:
         return IssueStatus.open;
     }
@@ -35,6 +37,9 @@ class IssueStatusAdapter extends TypeAdapter<IssueStatus> {
         break;
       case IssueStatus.resolved:
         writer.writeByte(2);
+        break;
+      case IssueStatus.closed:
+        writer.writeByte(3);
         break;
     }
   }

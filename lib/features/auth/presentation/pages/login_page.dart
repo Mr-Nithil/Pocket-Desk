@@ -8,6 +8,7 @@ import 'package:pocket_desk/features/auth/presentation/widgets/auth_button.dart'
 import 'package:pocket_desk/features/issue/presentation/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
+  static route() => MaterialPageRoute(builder: (context) => LoginPage());
   const LoginPage({super.key});
 
   @override

@@ -4,6 +4,7 @@ import 'package:pocket_desk/config/theme/theme.dart';
 import 'package:pocket_desk/core/widgets/loader.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_desk/features/auth/presentation/pages/login_page.dart';
+import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 import 'package:pocket_desk/features/issue/presentation/pages/home_page.dart';
 import 'package:pocket_desk/init_dependencies.dart';
 
@@ -12,7 +13,10 @@ void main() async {
   await initDependencies();
   runApp(
     MultiBlocProvider(
-      providers: [BlocProvider(create: (_) => serviceLocator<AuthBloc>())],
+      providers: [
+        BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
+        BlocProvider(create: (_) => serviceLocator<IssueBloc>()),
+      ],
       child: const MyApp(),
     ),
   );

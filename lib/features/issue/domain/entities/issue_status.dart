@@ -1,7 +1,8 @@
 enum IssueStatus {
   open,
   inProgress,
-  resolved;
+  resolved,
+  closed;
 
   String get uiName {
     if (this == IssueStatus.inProgress) return 'In Progress';

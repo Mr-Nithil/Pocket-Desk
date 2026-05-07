@@ -100,7 +100,7 @@ void _initIssue() {
     () => IssueDelete(issueRepository: serviceLocator()),
   );
 
-  serviceLocator.registerLazySingleton(
+  serviceLocator.registerFactory(
     () => IssueBloc(
       issueCreate: serviceLocator(),
       issueFetchAll: serviceLocator(),

@@ -9,7 +9,9 @@ enum IssueStatus {
   @HiveField(1)
   inProgress,
   @HiveField(2)
-  resolved;
+  resolved,
+  @HiveField(3)
+  closed;
 
   String get uiName {
     if (this == IssueStatus.inProgress) return 'In Progress';
