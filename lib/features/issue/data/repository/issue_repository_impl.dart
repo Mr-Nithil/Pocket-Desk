@@ -45,9 +45,17 @@ class IssueRepositoryImpl implements IssueRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteIssue({required String id}) {
-    // TODO: implement deleteIssue
-    throw UnimplementedError();
+  Future<Either<Failure, void>> deleteIssue({
+    required String id,
+    required String userId,
+  }) async {
+    try {
+      await issueLocalDatasource.deleteIssue(id, userId);
+
+      return right(null);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
   }
 
   @override

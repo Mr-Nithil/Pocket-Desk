@@ -27,6 +27,13 @@ class LoadIssuesEvent extends IssueEvent {
   LoadIssuesEvent({required this.userId});
 }
 
+class DeleteIssueEvent extends IssueEvent {
+  final String id;
+  final String userId;
+
+  DeleteIssueEvent({required this.userId, required this.id});
+}
+
 class UpdateIssueEvent extends IssueEvent {
   final String id;
   final String userId;

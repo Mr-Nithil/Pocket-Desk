@@ -14,7 +14,10 @@ abstract interface class IssueRepository {
     required IssuePriority? priority,
     required String? optionalAssignee,
   });
-  Future<Either<Failure, void>> deleteIssue({required String id});
+  Future<Either<Failure, void>> deleteIssue({
+    required String id,
+    required String userId,
+  });
   Future<Either<Failure, Issue>> updateIssues({
     required String id,
     required String userId,

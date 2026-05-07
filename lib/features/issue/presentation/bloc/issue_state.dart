@@ -19,6 +19,8 @@ class IssueUpdated extends IssueState {
   IssueUpdated(this.issue);
 }
 
+class IssueDeleted extends IssueState {}
+
 class IssueLoaded extends IssueState {
   final List<Issue> issues;
 

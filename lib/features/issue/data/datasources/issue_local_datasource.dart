@@ -25,9 +25,22 @@ class IssueLocalDatasourceImpl implements IssueLocalDatasource {
   }
 
   @override
-  Future<void> deleteIssue(String id, String userId) {
-    // TODO: implement deleteIssue
-    throw UnimplementedError();
+  Future<void> deleteIssue(String id, String userId) async {
+    try {
+      final issue = issueBox.get(id);
+
+      if (issue == null) {
+        throw ServerException("Issue not found!");
+      }
+
+      if (issue.userId != userId) {
+        throw ServerException("Unauthorized to delete!");
+      }
+
+      await issueBox.delete(id);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 
   @override

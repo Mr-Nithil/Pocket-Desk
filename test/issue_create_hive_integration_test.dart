@@ -12,6 +12,7 @@ import 'package:pocket_desk/features/issue/data/repository/issue_repository_impl
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_delete.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_update.dart';
 
@@ -26,6 +27,7 @@ void main() {
     late IssueCreate issueCreate;
     late IssueFetchAll issueFetchAll;
     late IssueUpdate issueUpdate;
+    late IssueDelete issueDelete;
 
     setUpAll(() async {
       tempDir = await Directory.systemTemp.createTemp();
@@ -39,6 +41,7 @@ void main() {
       issueCreate = IssueCreate(issueRepository: repository);
       issueFetchAll = IssueFetchAll(issueRepository: repository);
       issueUpdate = IssueUpdate(issueRepository: repository);
+      issueDelete = IssueDelete(issueRepository: repository);
     });
 
     tearDownAll(() async {
@@ -109,6 +112,32 @@ void main() {
         expect(issues.first.status, oldIssue.status);
         expect(issues.first.priority, IssuePriority.high);
         expect(issues.first.optionalAssignee, 'assignee2');
+      });
+    });
+
+    test('should delete issue from Hive box', () async {
+      final fetchResult = await issueFetchAll(
+        IssueFetchAllParams(userId: 'user1'),
+      );
+      expect(fetchResult.isRight(), true);
+      final oldIssue = fetchResult.getOrElse((_) => [])[0];
+      print('Fetched issues: ${oldIssue.id}');
+      print('Fetched issues: ${oldIssue.userId}');
+
+      final deleteParams = IssueDeleteParams(
+        id: oldIssue.id,
+        userId: oldIssue.userId,
+      );
+
+      await issueDelete(deleteParams);
+
+      final verifyResult = await issueFetchAll(
+        IssueFetchAllParams(userId: 'user1'),
+      );
+      expect(verifyResult.isRight(), true);
+      verifyResult.fold((_) => fail('Should not fail'), (issues) {
+        print('Fetched issues after delete: $issues');
+        expect(issues.length, 0);
       });
     });
   });

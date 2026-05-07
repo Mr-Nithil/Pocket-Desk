@@ -4,6 +4,7 @@ import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_delete.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_update.dart';
 
@@ -14,17 +15,21 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
   final IssueCreate _issueCreate;
   final IssueFetchAll _issueFetchAll;
   final IssueUpdate _issueUpdate;
+  final IssueDelete _issueDelete;
   IssueBloc({
     required IssueCreate issueCreate,
     required IssueFetchAll issueFetchAll,
     required IssueUpdate issueUpdate,
+    required IssueDelete issueDelete,
   }) : _issueCreate = issueCreate,
        _issueFetchAll = issueFetchAll,
        _issueUpdate = issueUpdate,
+       _issueDelete = issueDelete,
        super(IssueInitial()) {
     on<AddIssueEvent>(_onAddIssue);
     on<LoadIssuesEvent>(_onLoadIssues);
     on<UpdateIssueEvent>(_onUpdateIssue);
+    on<DeleteIssueEvent>(_onDeleteIssue);
   }
 
   void _onAddIssue(AddIssueEvent event, Emitter<IssueState> emit) async {
@@ -70,5 +75,15 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
       (l) => emit(IssueFailure(l.message)),
       (r) => emit(IssueUpdated(r)),
     );
+  }
+
+  void _onDeleteIssue(DeleteIssueEvent event, Emitter<IssueState> emit) async {
+    emit(IssueLoading());
+
+    final res = await _issueDelete(
+      IssueDeleteParams(id: event.id, userId: event.userId),
+    );
+
+    res.fold((l) => emit(IssueFailure(l.message)), (r) => emit(IssueDeleted()));
   }
 }
