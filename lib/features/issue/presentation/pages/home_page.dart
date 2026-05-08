@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pocket_desk/core/utils/show_snackbar.dart';
+import 'package:pocket_desk/core/widgets/app_confirm_dialog.dart';
 import 'package:pocket_desk/core/widgets/loader.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_desk/features/auth/presentation/pages/login_page.dart';
@@ -20,11 +21,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String? userId;
   @override
   void initState() {
     super.initState();
     final authState = context.read<AuthBloc>().state;
+
     if (authState is AuthAuthenticated) {
+      userId = authState.user.email;
       context.read<IssueBloc>().add(
         LoadIssuesEvent(userId: authState.user.email),
       );
@@ -139,7 +143,22 @@ class _HomePageState extends State<HomePage> {
                                 priorityColor: issue.priority.color,
                                 onTap: () {},
                                 onEdit: () {},
-                                onDelete: () {},
+                                onDelete: () {
+                                  AppConfirmDialog.show(
+                                    context: context,
+                                    message:
+                                        "Warning: This will permanently erase this issue and all its content.",
+                                    primaryButtonText: "Delete",
+                                    onConfirm: () {
+                                      context.read<IssueBloc>().add(
+                                        DeleteIssueEvent(
+                                          userId: userId!,
+                                          id: issue.id,
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
                               );
                             },
                           ),
