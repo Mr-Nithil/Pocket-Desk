@@ -152,13 +152,13 @@ class IssueRepositoryImpl implements IssueRepository {
     try {
       final issues = issueLocalDatasource.getIssues(userId);
 
-      final resultIssues = issues
-          .where(
-            (issue) =>
-                issue.title.toLowerCase().contains(query.toLowerCase()) ||
-                issue.description!.toLowerCase().contains(query.toLowerCase()),
-          )
-          .toList();
+      final q = query.toLowerCase();
+
+      final resultIssues = issues.where((issue) {
+        return issue.title.toLowerCase().contains(q) ||
+            (issue.description?.toLowerCase().contains(q) ?? false) ||
+            issue.id.toLowerCase().contains(q);
+      }).toList();
 
       return right(resultIssues.map((issue) => issue.toEntity()).toList());
     } on ServerException catch (e) {

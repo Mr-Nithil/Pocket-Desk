@@ -134,9 +134,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
       IssueSearchParams(userId: event.userId, query: event.query),
     );
 
-    await res.fold((l) async => emit(IssueFailure(l.message)), (r) async {
-      await _emitLoadedIssues(userId: event.userId, emit: emit);
-    });
+    res.fold((l) => emit(IssueFailure(l.message)), (r) => emit(IssueLoaded(r)));
   }
 
   Future<void> _onFilterIssues(
@@ -153,8 +151,6 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
       ),
     );
 
-    await res.fold((l) async => emit(IssueFailure(l.message)), (r) async {
-      await _emitLoadedIssues(userId: event.userId, emit: emit);
-    });
+    res.fold((l) => emit(IssueFailure(l.message)), (r) => emit(IssueLoaded(r)));
   }
 }

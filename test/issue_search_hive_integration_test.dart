@@ -69,9 +69,14 @@ void main() {
             optionalAssignee: null,
           ),
         ];
-        for (final params in issuesToCreate) {
-          final result = await issueCreate(params);
+
+        String? firstIssueId;
+        for (int i = 0; i < issuesToCreate.length; i++) {
+          final result = await issueCreate(issuesToCreate[i]);
           expect(result.isRight(), true);
+          if (i == 0) {
+            result.fold((_) {}, (issue) => firstIssueId = issue.id);
+          }
         }
 
         final searchResult1 = await repository.searchIssues(
@@ -112,6 +117,20 @@ void main() {
           expect(issues.length, 1);
           expect(issues.first.title, contains('login'));
         });
+
+        if (firstIssueId != null) {
+          final searchResult5 = await repository.searchIssues(
+            userId: 'user1',
+            query: firstIssueId!,
+          );
+          expect(searchResult5.isRight(), true);
+          searchResult5.fold((_) => fail('Should not fail'), (issues) {
+            expect(issues.length, 1);
+            expect(issues.first.id, contains(firstIssueId!));
+          });
+        } else {
+          fail('First issue id was not captured');
+        }
       },
     );
   });

@@ -50,6 +50,8 @@ class IssueLocalDatasourceImpl implements IssueLocalDatasource {
           .where((issue) => issue.userId == userId)
           .toList();
 
+      issues.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
       return issues;
     } catch (e) {
       throw ServerException(e.toString());
