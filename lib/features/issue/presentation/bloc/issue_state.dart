@@ -7,27 +7,13 @@ final class IssueInitial extends IssueState {}
 
 final class IssueLoading extends IssueState {}
 
-class IssueCreated extends IssueState {
-  final Issue issue;
-
-  IssueCreated(this.issue);
-}
-
-class IssueUpdated extends IssueState {
-  final Issue issue;
-
-  IssueUpdated(this.issue);
-}
-
-class IssueDeleted extends IssueState {}
-
-class IssueLoaded extends IssueState {
+final class IssueLoaded extends IssueState {
   final List<Issue> issues;
 
   IssueLoaded(this.issues);
 }
 
-class IssueFailure extends IssueState {
+final class IssueFailure extends IssueState {
   final String message;
 
   IssueFailure(this.message);

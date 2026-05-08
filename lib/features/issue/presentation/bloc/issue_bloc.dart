@@ -16,6 +16,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
   final IssueFetchAll _issueFetchAll;
   final IssueUpdate _issueUpdate;
   final IssueDelete _issueDelete;
+
   IssueBloc({
     required IssueCreate issueCreate,
     required IssueFetchAll issueFetchAll,
@@ -32,8 +33,24 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
     on<DeleteIssueEvent>(_onDeleteIssue);
   }
 
-  void _onAddIssue(AddIssueEvent event, Emitter<IssueState> emit) async {
+  Future<void> _emitLoadedIssues({
+    required String userId,
+    required Emitter<IssueState> emit,
+  }) async {
+    final res = await _issueFetchAll(IssueFetchAllParams(userId: userId));
+
+    res.fold((l) => emit(IssueFailure(l.message)), (r) {
+      print('Loaded issue count: ${r.length}');
+      emit(IssueLoaded(r));
+    });
+  }
+
+  Future<void> _onAddIssue(
+    AddIssueEvent event,
+    Emitter<IssueState> emit,
+  ) async {
     emit(IssueLoading());
+
     final res = await _issueCreate(
       IssueCreateParams(
         userId: event.userId,
@@ -44,22 +61,27 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
         optionalAssignee: event.optionalAssignee,
       ),
     );
-    res.fold(
-      (l) => emit(IssueFailure(l.message)),
-      (r) => emit(IssueCreated(r)),
-    );
+
+    await res.fold((l) async => emit(IssueFailure(l.message)), (r) async {
+      await _emitLoadedIssues(userId: event.userId, emit: emit);
+    });
   }
 
-  void _onLoadIssues(LoadIssuesEvent event, Emitter<IssueState> emit) async {
+  Future<void> _onLoadIssues(
+    LoadIssuesEvent event,
+    Emitter<IssueState> emit,
+  ) async {
     emit(IssueLoading());
 
-    final res = await _issueFetchAll(IssueFetchAllParams(userId: event.userId));
-
-    res.fold((l) => emit(IssueFailure(l.message)), (r) => emit(IssueLoaded(r)));
+    await _emitLoadedIssues(userId: event.userId, emit: emit);
   }
 
-  void _onUpdateIssue(UpdateIssueEvent event, Emitter<IssueState> emit) async {
+  Future<void> _onUpdateIssue(
+    UpdateIssueEvent event,
+    Emitter<IssueState> emit,
+  ) async {
     emit(IssueLoading());
+
     final res = await _issueUpdate(
       IssueUpdateParams(
         id: event.id,
@@ -71,19 +93,24 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
         optionalAssignee: event.optionalAssignee,
       ),
     );
-    res.fold(
-      (l) => emit(IssueFailure(l.message)),
-      (r) => emit(IssueUpdated(r)),
-    );
+
+    await res.fold((l) async => emit(IssueFailure(l.message)), (r) async {
+      await _emitLoadedIssues(userId: event.userId, emit: emit);
+    });
   }
 
-  void _onDeleteIssue(DeleteIssueEvent event, Emitter<IssueState> emit) async {
+  Future<void> _onDeleteIssue(
+    DeleteIssueEvent event,
+    Emitter<IssueState> emit,
+  ) async {
     emit(IssueLoading());
 
     final res = await _issueDelete(
       IssueDeleteParams(id: event.id, userId: event.userId),
     );
 
-    res.fold((l) => emit(IssueFailure(l.message)), (r) => emit(IssueDeleted()));
+    await res.fold((l) async => emit(IssueFailure(l.message)), (r) async {
+      await _emitLoadedIssues(userId: event.userId, emit: emit);
+    });
   }
 }
