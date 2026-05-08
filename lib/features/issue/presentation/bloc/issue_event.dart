@@ -60,3 +60,15 @@ class SearchIssuesEvent extends IssueEvent {
 
   SearchIssuesEvent({required this.userId, required this.query});
 }
+
+class FilterIssuesEvent extends IssueEvent {
+  final String userId;
+  final IssueStatus status;
+  final IssuePriority priority;
+
+  FilterIssuesEvent({
+    required this.userId,
+    required this.status,
+    required this.priority,
+  });
+}

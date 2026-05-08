@@ -12,8 +12,8 @@ abstract interface class IssueRepository {
   });
   Future<Either<Failure, List<Issue>>> filterIssues({
     required String userId,
-    required IssueStatus? status,
-    required IssuePriority? priority,
+    IssueStatus? status,
+    IssuePriority? priority,
   });
   Future<Either<Failure, Issue>> addIssue({
     required String userId,
