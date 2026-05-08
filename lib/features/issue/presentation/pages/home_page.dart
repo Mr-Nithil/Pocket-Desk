@@ -7,8 +7,9 @@ import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_desk/features/auth/presentation/pages/login_page.dart';
 
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
+import 'package:pocket_desk/features/issue/presentation/pages/issue_view_page.dart';
 
-import 'add/edit_issue_page.dart';
+import 'add_edit_issue_page.dart';
 import '../widgets/issue_card.dart';
 import '../widgets/status_summary_card.dart';
 
@@ -141,7 +142,14 @@ class _HomePageState extends State<HomePage> {
                                 date: issue.createdAt,
                                 priority: issue.priority,
                                 priorityColor: issue.priority.color,
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          IssueViewPage(issue: issue),
+                                    ),
+                                  );
+                                },
                                 onEdit: () {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(

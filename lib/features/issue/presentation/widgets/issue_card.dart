@@ -4,6 +4,8 @@ import 'package:pocket_desk/config/theme/color_palette.dart';
 
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
+import 'package:pocket_desk/features/issue/presentation/widgets/priority_chip.dart';
+import 'package:pocket_desk/features/issue/presentation/widgets/status_chip.dart';
 
 class IssueCard extends StatelessWidget {
   final String title;
@@ -81,24 +83,7 @@ class IssueCard extends StatelessWidget {
 
                     const SizedBox(width: 12),
 
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        status.uiName,
-                        style: TextStyle(
-                          color: statusColor,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
+                    StatusChip(label: status.uiName, color: statusColor),
                   ],
                 ),
 
@@ -145,39 +130,7 @@ class IssueCard extends StatelessWidget {
 
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: priorityColor.withOpacity(0.10),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: priorityColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-
-                          const SizedBox(width: 8),
-
-                          Text(
-                            priority.uiName,
-                            style: TextStyle(
-                              color: priorityColor,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    PriorityChip(label: priority.uiName, color: priorityColor),
 
                     const Spacer(),
 

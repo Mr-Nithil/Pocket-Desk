@@ -5,6 +5,7 @@ import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
+import 'package:pocket_desk/features/issue/presentation/pages/home_page.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/issue_text_field.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/priority_selector.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/status_selector.dart';
@@ -191,7 +192,11 @@ class _AddEditIssuePageState extends State<AddEditIssuePage> {
                             );
                           }
 
-                          Navigator.pop(context);
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            HomePage.route(),
+                            (route) => false,
+                          );
                         }
                       },
                     ),
