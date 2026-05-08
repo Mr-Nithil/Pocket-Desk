@@ -114,7 +114,15 @@ class IssueCard extends StatelessWidget {
 
                     const SizedBox(width: 5),
 
-                    Text(code, style: Theme.of(context).textTheme.bodySmall),
+                    Container(
+                      width: 100,
+                      child: Text(
+                        code,
+                        style: Theme.of(context).textTheme.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
 
                     const SizedBox(width: 14),
 

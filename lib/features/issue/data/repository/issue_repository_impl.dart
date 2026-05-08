@@ -8,12 +8,12 @@ import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/domain/repository/issue_repository.dart';
-import 'package:uuid/uuid.dart';
 
 class IssueRepositoryImpl implements IssueRepository {
   final IssueLocalDatasource issueLocalDatasource;
 
   IssueRepositoryImpl({required this.issueLocalDatasource});
+
   @override
   Future<Either<Failure, Issue>> addIssue({
     required String userId,
@@ -24,8 +24,20 @@ class IssueRepositoryImpl implements IssueRepository {
     required String? optionalAssignee,
   }) async {
     try {
+      final allIssues = issueLocalDatasource.getIssues(userId);
+      int maxCode = 100;
+      for (final issue in allIssues) {
+        final match = RegExp(r'^IS-(\d+)').firstMatch(issue.id);
+        if (match != null) {
+          final codeNum = int.tryParse(match.group(1) ?? '0') ?? 0;
+          if (codeNum > maxCode) maxCode = codeNum;
+        }
+      }
+      final nextCode = maxCode + 1;
+      final issueId = 'IS-$nextCode';
+
       final issue = IssueModel(
-        id: Uuid().v4(),
+        id: issueId,
         userId: userId,
         title: title,
         description: description ?? "",

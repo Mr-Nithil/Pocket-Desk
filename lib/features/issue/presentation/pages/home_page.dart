@@ -133,7 +133,7 @@ class _HomePageState extends State<HomePage> {
                                 title: issue.title,
                                 status: issue.status,
                                 statusColor: issue.status.color,
-                                code: "IS-402",
+                                code: issue.id,
                                 date: issue.createdAt,
                                 priority: issue.priority,
                                 priorityColor: issue.priority.color,
