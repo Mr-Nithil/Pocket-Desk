@@ -53,3 +53,10 @@ class UpdateIssueEvent extends IssueEvent {
     required this.optionalAssignee,
   });
 }
+
+class SearchIssuesEvent extends IssueEvent {
+  final String userId;
+  final String query;
+
+  SearchIssuesEvent({required this.userId, required this.query});
+}

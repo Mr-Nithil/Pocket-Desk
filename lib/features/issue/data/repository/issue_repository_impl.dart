@@ -119,4 +119,38 @@ class IssueRepositoryImpl implements IssueRepository {
       return left(Failure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, List<Issue>>> filterIssues({
+    required String userId,
+    required IssueStatus? status,
+    required IssuePriority? priority,
+  }) {
+    // TODO: implement filterIssues
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Either<Failure, List<Issue>>> searchIssues({
+    required String userId,
+    required String query,
+  }) async {
+    try {
+      final issues = issueLocalDatasource.getIssues(userId);
+
+      final resultIssues = issues
+          .where(
+            (issue) =>
+                issue.title.toLowerCase().contains(query.toLowerCase()) ||
+                issue.description!.toLowerCase().contains(query.toLowerCase()),
+          )
+          .toList();
+
+      return right(resultIssues.map((issue) => issue.toEntity()).toList());
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
 }

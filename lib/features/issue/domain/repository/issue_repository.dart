@@ -6,6 +6,15 @@ import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 
 abstract interface class IssueRepository {
   Future<Either<Failure, List<Issue>>> getIssues({required String userId});
+  Future<Either<Failure, List<Issue>>> searchIssues({
+    required String userId,
+    required String query,
+  });
+  Future<Either<Failure, List<Issue>>> filterIssues({
+    required String userId,
+    required IssueStatus? status,
+    required IssuePriority? priority,
+  });
   Future<Either<Failure, Issue>> addIssue({
     required String userId,
     required String title,
