@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pocket_desk/config/theme/color_palette.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
@@ -9,30 +9,45 @@ import 'package:pocket_desk/features/issue/presentation/widgets/issue_text_field
 import 'package:pocket_desk/features/issue/presentation/widgets/priority_selector.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/status_selector.dart';
 
-class AddIssuePage extends StatefulWidget {
-  const AddIssuePage({super.key});
+class AddEditIssuePage extends StatefulWidget {
+  final Issue? issue;
+
+  const AddEditIssuePage({super.key, this.issue});
+
   @override
-  State<AddIssuePage> createState() => _AddIssuePageState();
+  State<AddEditIssuePage> createState() => _AddEditIssuePageState();
 }
 
-class _AddIssuePageState extends State<AddIssuePage> {
+class _AddEditIssuePageState extends State<AddEditIssuePage> {
   final _formKey = GlobalKey<FormState>();
+
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
   final _assigneeController = TextEditingController();
+
   IssuePriority _priority = IssuePriority.medium;
   IssueStatus _status = IssueStatus.open;
+
   String? _userEmail;
+
+  bool get isEditMode => widget.issue != null;
 
   @override
   void initState() {
     super.initState();
+
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       _userEmail = authState.user.email;
-      context.read<IssueBloc>().add(
-        LoadIssuesEvent(userId: authState.user.email),
-      );
+    }
+
+    final issue = widget.issue;
+    if (issue != null) {
+      _titleController.text = issue.title;
+      _descController.text = issue.description ?? "";
+      _priority = issue.priority;
+      _status = issue.status;
+      _assigneeController.text = issue.optionalAssignee ?? '';
     }
   }
 
@@ -46,41 +61,23 @@ class _AddIssuePageState extends State<AddIssuePage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('New Issue'),
+        title: Text(isEditMode ? 'Edit Issue' : 'New Issue'),
         centerTitle: false,
-        elevation: 0,
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? ColorPalette.darkSurface
-            : ColorPalette.lightSurface,
-        foregroundColor: Theme.of(context).brightness == Brightness.dark
-            ? ColorPalette.darkPrimaryText
-            : ColorPalette.lightPrimaryText,
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
-                  color: Colors.black.withOpacity(
-                    Theme.of(context).brightness == Brightness.dark
-                        ? 0.18
-                        : 0.04,
-                  ),
-                ),
-              ],
+              border: Border.all(color: colorScheme.outline.withOpacity(0.12)),
             ),
             child: Form(
               key: _formKey,
@@ -88,108 +85,128 @@ class _AddIssuePageState extends State<AddIssuePage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Create a new task to track progress and assign optional team members.',
+                    isEditMode
+                        ? 'Update the issue details, adjust requirements, and save your changes.'
+                        : 'Create a new task to define objectives and track progress over time.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
+
                   const SizedBox(height: 24),
+
                   IssueTextField(
                     label: 'TITLE',
-                    hint: 'e.g., Fix navigation jitter on mobile',
+                    hint: 'Enter title',
                     controller: _titleController,
                     validator: (v) =>
                         v == null || v.isEmpty ? 'Enter title' : null,
                   ),
+
                   const SizedBox(height: 20),
+
                   IssueTextField(
                     label: 'DESCRIPTION',
-                    hint: 'Describe the issue in detail...',
+                    hint: 'Enter description',
                     controller: _descController,
-                    maxLines: 3,
+                    minLines: 4,
                     validator: (v) =>
                         v == null || v.isEmpty ? 'Enter description' : null,
                   ),
+
                   const SizedBox(height: 20),
+
                   Text(
                     'PRIORITY',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? ColorPalette.darkPrimaryText
-                          : ColorPalette.lightPrimaryText,
-                    ),
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
+
                   const SizedBox(height: 8),
+
                   PrioritySelector(
                     selected: _priority,
                     onChanged: (val) => setState(() => _priority = val),
                   ),
+
                   const SizedBox(height: 20),
-                  Text(
-                    'STATUS',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? ColorPalette.darkPrimaryText
-                          : ColorPalette.lightPrimaryText,
-                    ),
-                  ),
+
+                  Text('STATUS', style: Theme.of(context).textTheme.labelLarge),
+
                   const SizedBox(height: 8),
+
                   StatusSelector(
                     selected: _status,
                     onChanged: (val) => setState(() => _status = val),
                   ),
+
                   const SizedBox(height: 20),
+
                   IssueTextField(
-                    label: 'OPTIONAL ASSIGNEE',
-                    hint: 'e.g. John Doe',
+                    label: 'ASSIGNEE (OPTIONAL)',
+                    hint: 'Enter name',
                     controller: _assigneeController,
                   ),
+
                   const SizedBox(height: 32),
+
                   SizedBox(
-                    width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: ColorPalette.fabColor,
+                        backgroundColor: colorScheme.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
-                        'Create Issue',
-                        style: TextStyle(
+                      child: Text(
+                        isEditMode ? 'Update Issue' : 'Create Issue',
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          context.read<IssueBloc>().add(
-                            AddIssueEvent(
-                              userId: _userEmail!,
-                              title: _titleController.text,
-                              description: _descController.text,
-                              status: _status,
-                              priority: _priority,
-                              optionalAssignee: null,
-                            ),
-                          );
+                          if (isEditMode) {
+                            context.read<IssueBloc>().add(
+                              UpdateIssueEvent(
+                                id: widget.issue!.id,
+                                userId: _userEmail!,
+                                title: _titleController.text,
+                                description: _descController.text,
+                                status: _status,
+                                priority: _priority,
+                                optionalAssignee: _assigneeController.text,
+                              ),
+                            );
+                          } else {
+                            context.read<IssueBloc>().add(
+                              AddIssueEvent(
+                                userId: _userEmail!,
+                                title: _titleController.text,
+                                description: _descController.text,
+                                status: _status,
+                                priority: _priority,
+                                optionalAssignee: _assigneeController.text,
+                              ),
+                            );
+                          }
+
                           Navigator.pop(context);
                         }
                       },
                     ),
                   ),
+
                   const SizedBox(height: 16),
+
                   Center(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: Text(
                         'CANCEL',
                         style: TextStyle(
+                          color: colorScheme.onSurfaceVariant,
                           letterSpacing: 1.2,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? ColorPalette.darkSecondaryText
-                              : ColorPalette.lightSecondaryText,
                         ),
                       ),
                     ),

@@ -8,7 +8,7 @@ import 'package:pocket_desk/features/auth/presentation/pages/login_page.dart';
 
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 
-import 'add_issue_page.dart';
+import 'add/edit_issue_page.dart';
 import '../widgets/issue_card.dart';
 import '../widgets/status_summary_card.dart';
 
@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 20),
                   issues.isNotEmpty
                       ? Expanded(
                           child: ListView.builder(
@@ -142,7 +142,14 @@ class _HomePageState extends State<HomePage> {
                                 priority: issue.priority,
                                 priorityColor: issue.priority.color,
                                 onTap: () {},
-                                onEdit: () {},
+                                onEdit: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          AddEditIssuePage(issue: issue),
+                                    ),
+                                  );
+                                },
                                 onDelete: () {
                                   AppConfirmDialog.show(
                                     context: context,
@@ -247,7 +254,7 @@ class _HomePageState extends State<HomePage> {
                                       onPressed: () {
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
-                                            builder: (_) => AddIssuePage(),
+                                            builder: (_) => AddEditIssuePage(),
                                           ),
                                         );
                                       },
@@ -274,7 +281,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               Navigator.of(
                 context,
-              ).push(MaterialPageRoute(builder: (_) => AddIssuePage()));
+              ).push(MaterialPageRoute(builder: (_) => AddEditIssuePage()));
             },
           ),
         ),

@@ -5,6 +5,7 @@ class IssueTextField extends StatelessWidget {
   final String? hint;
   final TextEditingController controller;
   final int maxLines;
+  final int minLines;
   final String? Function(String?)? validator;
   final bool enabled;
   final Widget? prefix;
@@ -17,6 +18,7 @@ class IssueTextField extends StatelessWidget {
     required this.controller,
     this.hint,
     this.maxLines = 1,
+    this.minLines = 1,
     this.validator,
     this.enabled = true,
     this.prefix,
@@ -34,7 +36,8 @@ class IssueTextField extends StatelessWidget {
         TextFormField(
           controller: controller,
           enabled: enabled,
-          maxLines: maxLines,
+          minLines: minLines,
+          maxLines: null,
           validator: validator,
           keyboardType: keyboardType,
           decoration: InputDecoration(
