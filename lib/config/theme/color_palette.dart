@@ -38,4 +38,28 @@ class ColorPalette {
 
   static const Color shadowColor = Color(0x14000000);
   static const Color transparentColor = Colors.transparent;
+
+  static const Color blue = ColorPalette.infoColor;
+  static const Color green = ColorPalette.successColor;
+  static const Color orange = ColorPalette.warningColor;
+  static const Color red = ColorPalette.errorColor;
+
+  static const Color statusOpen = Color(0xFFF59E0B);
+  static const Color statusInProgress = Color(0xFF3B82F6);
+  static const Color statusResolved = Color(0xFF22C55E);
+  static const Color statusClosed = Color(0xFF64748B);
+
+  static const Color priorityLow = Color(0xFF22C55E);
+  static const Color priorityMedium = Color(0xFFF59E0B);
+  static const Color priorityHigh = Color(0xFFEF4444);
+
+  static const Color editAction = Color(0xFF6366F1);
+  static const Color deleteAction = Color(0xFFEF4444);
+
+  static const Color fabColor = Color(0xFF2563EB);
+
+  static const Color buttonTextDark = Color(0xFFE6EDF3);
+  static const Color buttonTextLight = Color(0xFF0F172A);
+  static const Color buttonBackgroundDark = darkAccent;
+  static const Color buttonBackgroundLight = lightAccent;
 }
