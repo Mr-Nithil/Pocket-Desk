@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:pocket_desk/config/theme/color_palette.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
+import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
+import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 import 'package:pocket_desk/features/issue/presentation/pages/add_edit_issue_page.dart';
+import 'package:pocket_desk/features/issue/presentation/pages/home_page.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/priority_chip.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/section_card.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/status_chip.dart';
@@ -160,15 +164,45 @@ class IssueViewPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
+
                 Expanded(
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ColorPalette.successColor,
                       foregroundColor: Colors.white,
+                      disabledBackgroundColor: ColorPalette.successColor
+                          .withOpacity(0.3),
+                      disabledForegroundColor: Colors.white70,
                     ),
-                    onPressed: () {},
+
+                    onPressed: issue.status == IssueStatus.resolved
+                        ? null
+                        : () {
+                            context.read<IssueBloc>().add(
+                              UpdateIssueEvent(
+                                id: issue.id,
+                                userId: issue.userId,
+                                title: issue.title,
+                                description: issue.description,
+                                status: IssueStatus.resolved,
+                                priority: issue.priority,
+                                optionalAssignee: issue.optionalAssignee,
+                              ),
+                            );
+
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              HomePage.route(),
+                              (route) => false,
+                            );
+                          },
+
                     icon: const Icon(Icons.check_circle_outline),
-                    label: const Text("Resolve"),
+                    label: Text(
+                      issue.status == IssueStatus.resolved
+                          ? "Resolved"
+                          : "Resolve",
+                    ),
                   ),
                 ),
               ],
