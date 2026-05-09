@@ -192,4 +192,50 @@ class IssueRepositoryImpl implements IssueRepository {
       return left(Failure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, List<Issue>>> createMockIssues({
+    required String userId,
+  }) async {
+    try {
+      final mockIssues = [
+        IssueModel(
+          id: '001',
+          userId: userId,
+          title: "Implement Dark Mode Theme Support",
+          description:
+              "The application currently only supports a light theme. We need to implement a full Dark Mode toggle that adheres to system settings and provides a consistent UI across all components.\n\nRequirements:\n• Create a new ThemeExtension for custom colors.\n• Ensure all hardcoded hex values are replaced with dynamic theme references.\n• Implement a smooth transition animation when switching modes.\n• Audit the accessibility of text contrast in dark view.",
+          createdAt: DateTime.now().subtract(const Duration(hours: 4)),
+        ),
+        IssueModel(
+          id: '002',
+          userId: userId,
+          title: "Refactor API Connectivity Layer",
+          description:
+              "The current implementation uses multiple Dio instances. We need a centralized singleton approach to handle interceptors, token refreshes, and error logging more efficiently.\n\nRequirements:\n• Implement a global error interceptor for 401 and 500 status codes.\n• Add logic to automatically refresh JWT tokens before expiration.\n• Integrate the Sentry SDK for real-time error tracking.\n• Cache GET requests locally using a Hive box for offline support.",
+          createdAt: DateTime.now().subtract(const Duration(days: 2)),
+        ),
+        IssueModel(
+          id: '003',
+          userId: userId,
+          title: "User Profile Revamp & Image Upload",
+          description:
+              "Users are requesting more customization for their profiles. We need to overhaul the profile editing screen to include a bio section and an avatar uploader.\n\nRequirements:\n• Integrate the image_picker package for gallery and camera access.\n• Add a cropping tool to ensure avatars are 1:1 aspect ratio.\n• Implement a character counter for the 'Bio' text field (max 250 chars).\n• Create a persistent storage path for local image caching.",
+          createdAt: DateTime.now().subtract(const Duration(days: 5)),
+        ),
+      ];
+
+      for (IssueModel issue in mockIssues) {
+        await issueLocalDatasource.addIssue(issue);
+      }
+
+      final issues = issueLocalDatasource.getIssues(userId);
+
+      return right(issues.map((issue) => issue.toEntity()).toList());
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
 }

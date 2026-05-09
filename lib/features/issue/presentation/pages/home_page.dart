@@ -8,6 +8,7 @@ import 'package:pocket_desk/core/utils/app_confirm_dialog.dart';
 import 'package:pocket_desk/core/utils/loader.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_desk/features/auth/presentation/pages/login_page.dart';
+import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/domain/entities/summary_stat_item.dart';
@@ -52,6 +53,23 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshIssues(List<Issue> issues) async {
+    if (issues.length != 0) {
+      context.read<IssueBloc>().add(
+        ApplyIssueQueryEvent(
+          userId: userId!,
+          query: _searchController.text.trim(),
+          status: selectedStatus,
+          priority: selectedPriority,
+        ),
+      );
+    } else {
+      context.read<IssueBloc>().add(CreateMockIssuesEvent(userId: userId!));
+    }
+
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   @override
@@ -143,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.titleMedium,
+                                style: Theme.of(context).textTheme.titleSmall,
                               ),
                             ],
                           ),
@@ -197,9 +215,6 @@ class _HomePageState extends State<HomePage> {
             }
           },
           builder: (context, state) {
-            if (state is IssueLoading) {
-              return Loader();
-            }
             if (state is IssueLoaded) {
               final issues = state.issues;
               return Column(
@@ -406,150 +421,248 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 20),
                   issues.isNotEmpty
                       ? Expanded(
-                          child: ListView.builder(
-                            itemCount: issues.length,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            itemBuilder: (context, index) {
-                              final issue = issues[index];
-                              return IssueCard(
-                                title: issue.title,
-                                status: issue.status,
-                                statusColor: issue.status.color,
-                                code: issue.id,
-                                date: issue.createdAt,
-                                priority: issue.priority,
-                                priorityColor: issue.priority.color,
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          IssueViewPage(issue: issue),
-                                    ),
-                                  );
-                                },
-                                onEdit: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          AddEditIssuePage(issue: issue),
-                                    ),
-                                  );
-                                },
-                                onDelete: () {
-                                  AppConfirmDialog.show(
-                                    context: context,
-                                    message:
-                                        "Warning: This will permanently erase this issue and all its content.",
-                                    primaryButtonText: "Delete",
-                                    onConfirm: () {
-                                      context.read<IssueBloc>().add(
-                                        DeleteIssueEvent(
-                                          userId: userId!,
-                                          id: issue.id,
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              );
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              _refreshIssues(issues);
                             },
-                          ),
-                        )
-                      : Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Container(
-                              width: double.infinity,
+                            child: ListView.builder(
+                              itemCount: issues.length,
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 28,
+                                horizontal: 12,
                               ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.outline.withOpacity(0.15),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(
-                                      Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? 0.18
-                                          : 0.05,
-                                    ),
-                                    blurRadius: 18,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(14),
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary.withOpacity(0.10),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.inbox_outlined,
-                                      size: 34,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 16),
-
-                                  Text(
-                                    'No issues found',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.w700),
-                                  ),
-
-                                  const SizedBox(height: 8),
-
-                                  Text(
-                                    'Your workspace is clean. Start by creating a new issue to track tasks and progress.',
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurfaceVariant,
-                                          height: 1.4,
-                                        ),
-                                  ),
-
-                                  const SizedBox(height: 18),
-
-                                  SizedBox(
-                                    width: 160,
-                                    child: ElevatedButton.icon(
-                                      onPressed: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (_) => AddEditIssuePage(),
+                              itemBuilder: (context, index) {
+                                final issue = issues[index];
+                                return IssueCard(
+                                  title: issue.title,
+                                  status: issue.status,
+                                  statusColor: issue.status.color,
+                                  code: issue.id,
+                                  date: issue.createdAt,
+                                  priority: issue.priority,
+                                  priorityColor: issue.priority.color,
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            IssueViewPage(issue: issue),
+                                      ),
+                                    );
+                                  },
+                                  onEdit: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            AddEditIssuePage(issue: issue),
+                                      ),
+                                    );
+                                  },
+                                  onDelete: () {
+                                    AppConfirmDialog.show(
+                                      context: context,
+                                      message:
+                                          "Warning: This will permanently erase this issue and all its content.",
+                                      primaryButtonText: "Delete",
+                                      onConfirm: () {
+                                        context.read<IssueBloc>().add(
+                                          DeleteIssueEvent(
+                                            userId: userId!,
+                                            id: issue.id,
                                           ),
                                         );
                                       },
-                                      icon: const Icon(Icons.add),
-                                      label: const Text("Create Issue"),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () async {
+                            _refreshIssues(issues);
+                          },
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child:
+                                _searchController.text.isNotEmpty ||
+                                    selectedStatus != null ||
+                                    selectedPriority != null
+                                ? Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 28,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.surface,
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                          border: Border.all(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .outline
+                                                .withOpacity(0.15),
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? 0.18
+                                                    : 0.05,
+                                              ),
+                                              blurRadius: 18,
+                                              offset: const Offset(0, 6),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(14),
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withOpacity(0.10),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.inbox_outlined,
+                                                size: 34,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                              ),
+                                            ),
+
+                                            const SizedBox(height: 16),
+
+                                            Text(
+                                              'No issues found',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                            ),
+
+                                            const SizedBox(height: 8),
+
+                                            Text(
+                                              'No matches found. Try adjusting your filters or search term.',
+                                              textAlign: TextAlign.center,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
+                                                    height: 1.4,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 28,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.surface,
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                          border: Border.all(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .outline
+                                                .withOpacity(0.15),
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? 0.18
+                                                    : 0.05,
+                                              ),
+                                              blurRadius: 18,
+                                              offset: const Offset(0, 6),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(14),
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withOpacity(0.10),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.arrow_circle_down_rounded,
+                                                size: 34,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                              ),
+                                            ),
+
+                                            const SizedBox(height: 16),
+
+                                            Text(
+                                              'Welcome to PocketDesk',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                            ),
+
+                                            const SizedBox(height: 8),
+
+                                            Text(
+                                              'Your workspace is clean. Create a new issue to get started, or pull down to start.',
+                                              textAlign: TextAlign.center,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
+                                                    height: 1.4,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
                           ),
                         ),
                   SizedBox(height: 40),

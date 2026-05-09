@@ -9,6 +9,9 @@ import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 abstract interface class IssueRepository {
   Future<Either<Failure, List<Issue>>> getIssues({required String userId});
   Future<Either<Failure, IssueStats>> getIssuesStats({required String userId});
+  Future<Either<Failure, List<Issue>>> createMockIssues({
+    required String userId,
+  });
   Future<Either<Failure, List<Issue>>> queryIssues({
     required IssueQueryParams params,
   });

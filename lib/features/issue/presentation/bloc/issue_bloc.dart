@@ -6,6 +6,7 @@ import 'package:pocket_desk/features/issue/domain/entities/issue_query_params.da
 import 'package:pocket_desk/features/issue/domain/entities/issue_stats.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_create_mock.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_delete.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_get_stats.dart';
@@ -22,6 +23,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
   final IssueDelete _issueDelete;
   final IssueGetStats _issueGetStats;
   final IssueQuery _issueQuery;
+  final IssueCreateMock _issueCreateMock;
 
   String _query = '';
   IssueStatus? _status;
@@ -34,18 +36,21 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
     required IssueDelete issueDelete,
     required IssueGetStats issueGetStats,
     required IssueQuery issueQuery,
+    required IssueCreateMock issueCreateMock,
   }) : _issueCreate = issueCreate,
        _issueFetchAll = issueFetchAll,
        _issueUpdate = issueUpdate,
        _issueDelete = issueDelete,
        _issueGetStats = issueGetStats,
        _issueQuery = issueQuery,
+       _issueCreateMock = issueCreateMock,
        super(IssueInitial()) {
     on<AddIssueEvent>(_onAddIssue);
     on<LoadIssuesEvent>(_onLoadIssues);
     on<UpdateIssueEvent>(_onUpdateIssue);
     on<DeleteIssueEvent>(_onDeleteIssue);
     on<ApplyIssueQueryEvent>(_onApplyIssueQuery);
+    on<CreateMockIssuesEvent>(_onCreateMockIssues);
   }
 
   Future<void> _emitLoadedIssues({
@@ -147,6 +152,25 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
         status: _status,
         priority: _priority,
       ),
+    );
+
+    final statsRes = await _issueGetStats(
+      IssueGetStatsParams(userId: event.userId),
+    );
+
+    res.fold((l) => emit(IssueFailure(l.message)), (issues) {
+      statsRes.fold((l) => emit(IssueFailure(l.message)), (stats) {
+        emit(IssueLoaded(issues: issues, stats: stats));
+      });
+    });
+  }
+
+  Future<void> _onCreateMockIssues(
+    CreateMockIssuesEvent event,
+    Emitter<IssueState> emit,
+  ) async {
+    final res = await _issueCreateMock(
+      IssueCreateMockParams(userId: event.userId),
     );
 
     final statsRes = await _issueGetStats(

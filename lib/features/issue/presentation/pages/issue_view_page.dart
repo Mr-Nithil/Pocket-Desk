@@ -131,7 +131,7 @@ class IssueViewPage extends StatelessWidget {
                   CircleAvatar(
                     backgroundColor: colorScheme.primary.withOpacity(0.12),
                     child: Icon(
-                      Icons.person_outline,
+                      Icons.person_rounded,
                       color: colorScheme.primary,
                     ),
                   ),

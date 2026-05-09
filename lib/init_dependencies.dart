@@ -15,6 +15,7 @@ import 'package:pocket_desk/features/issue/data/models/issue_status.dart';
 import 'package:pocket_desk/features/issue/data/repository/issue_repository_impl.dart';
 import 'package:pocket_desk/features/issue/domain/repository/issue_repository.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_create_mock.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_delete.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_get_stats.dart';
@@ -120,6 +121,10 @@ void _initIssue() {
   );
 
   serviceLocator.registerFactory(
+    () => IssueCreateMock(issueRepository: serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
     () => IssueBloc(
       issueCreate: serviceLocator(),
       issueFetchAll: serviceLocator(),
@@ -127,6 +132,7 @@ void _initIssue() {
       issueDelete: serviceLocator(),
       issueGetStats: serviceLocator(),
       issueQuery: serviceLocator(),
+      issueCreateMock: serviceLocator(),
     ),
   );
 }
