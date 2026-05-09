@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pocket_desk/core/cubits/theme_cubit.dart';
 import 'package:pocket_desk/features/auth/data/datasources/mock_auth_datasource.dart';
 import 'package:pocket_desk/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:pocket_desk/features/auth/domain/repository/auth_repository.dart';
@@ -26,13 +27,19 @@ final serviceLocator = GetIt.instance;
 
 Future<void> initDependencies() async {
   final prefs = await SharedPreferences.getInstance();
-
   serviceLocator.registerLazySingleton<SharedPreferences>(() => prefs);
 
   await _initHive();
 
+  _initTheme();
   _initAuth();
   _initIssue();
+}
+
+void _initTheme() {
+  serviceLocator.registerLazySingleton<ThemeCubit>(
+    () => ThemeCubit(preferencesBox: serviceLocator()),
+  );
 }
 
 Future<void> _initHive() async {
@@ -43,8 +50,10 @@ Future<void> _initHive() async {
   Hive.registerAdapter(IssueModelAdapter());
 
   final issueBox = await Hive.openBox<IssueModel>('issues');
-
   serviceLocator.registerLazySingleton<Box<IssueModel>>(() => issueBox);
+
+  final preferencesBox = await Hive.openBox('preferences');
+  serviceLocator.registerSingleton<Box>(preferencesBox);
 }
 
 void _initAuth() {

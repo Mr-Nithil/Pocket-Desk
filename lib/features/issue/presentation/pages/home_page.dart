@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pocket_desk/config/theme/color_palette.dart';
+import 'package:pocket_desk/core/constants/app_enums.dart';
+import 'package:pocket_desk/core/cubits/theme_cubit.dart';
 import 'package:pocket_desk/core/utils/show_snackbar.dart';
-import 'package:pocket_desk/core/widgets/app_confirm_dialog.dart';
-import 'package:pocket_desk/core/widgets/loader.dart';
+import 'package:pocket_desk/core/utils/app_confirm_dialog.dart';
+import 'package:pocket_desk/core/utils/loader.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_desk/features/auth/presentation/pages/login_page.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
@@ -70,9 +72,119 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           title: Text("PocketDesk"),
           actions: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-              child: IconButton(onPressed: () {}, icon: Icon(Icons.menu)),
+            BlocBuilder<ThemeCubit, ThemeMode>(
+              builder: (context, mode) {
+                final isDark =
+                    mode == ThemeMode.dark ||
+                    (mode == ThemeMode.system &&
+                        Theme.of(context).brightness == Brightness.dark);
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: PopupMenuButton<HomePageMenuAction>(
+                    tooltip: 'Open menu',
+                    icon: const Icon(Icons.menu_rounded),
+                    position: PopupMenuPosition.under,
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 240,
+                      maxWidth: 240,
+                    ),
+                    color: Theme.of(context).colorScheme.surface,
+                    onSelected: (value) {
+                      if (value == HomePageMenuAction.toggleTheme) {
+                        context.read<ThemeCubit>().toggleTheme();
+                      }
+                      if (value == HomePageMenuAction.signOut) {
+                        context.read<AuthBloc>().add(AuthLogOut());
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem<HomePageMenuAction>(
+                        enabled: false,
+                        height: 124,
+                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 24,
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primaryContainer,
+                                foregroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primary,
+                                child: const Icon(
+                                  Icons.person_rounded,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Logged in as',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.labelMedium,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                userId ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const PopupMenuDivider(),
+                      PopupMenuItem<HomePageMenuAction>(
+                        height: 44,
+                        value: HomePageMenuAction.toggleTheme,
+                        child: ListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          minLeadingWidth: 0,
+                          leading: Icon(
+                            isDark
+                                ? Icons.light_mode_rounded
+                                : Icons.dark_mode_rounded,
+                            size: 20,
+                          ),
+                          title: Text(
+                            isDark
+                                ? 'Switch to light mode'
+                                : 'Switch to dark mode',
+                          ),
+                        ),
+                      ),
+                      PopupMenuItem<HomePageMenuAction>(
+                        height: 44,
+                        value: HomePageMenuAction.signOut,
+                        child: const ListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          minLeadingWidth: 0,
+                          leading: Icon(Icons.logout_rounded, size: 20),
+                          title: Text('Sign out'),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),

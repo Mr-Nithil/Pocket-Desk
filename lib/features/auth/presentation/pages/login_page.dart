@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pocket_desk/core/utils/show_snackbar.dart';
-import 'package:pocket_desk/core/widgets/loader.dart';
+import 'package:pocket_desk/core/utils/loader.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_desk/features/auth/presentation/widgets/auth_field.dart';
 import 'package:pocket_desk/features/auth/presentation/widgets/auth_button.dart';

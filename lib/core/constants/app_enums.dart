@@ -1,0 +1,1 @@
+enum HomePageMenuAction { toggleTheme, signOut }
