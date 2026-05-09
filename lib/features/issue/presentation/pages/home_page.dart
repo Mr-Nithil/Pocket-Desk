@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pocket_desk/config/theme/color_palette.dart';
 import 'package:pocket_desk/core/utils/show_snackbar.dart';
 import 'package:pocket_desk/core/widgets/app_confirm_dialog.dart';
 import 'package:pocket_desk/core/widgets/loader.dart';
@@ -7,14 +8,15 @@ import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_desk/features/auth/presentation/pages/login_page.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
+import 'package:pocket_desk/features/issue/domain/entities/summary_stat_item.dart';
 
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 import 'package:pocket_desk/features/issue/presentation/pages/issue_view_page.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/show_filter_bottom_sheet.dart';
+import 'package:pocket_desk/features/issue/presentation/widgets/summary_stat_section.dart';
 
 import 'add_edit_issue_page.dart';
 import '../widgets/issue_card.dart';
-import '../widgets/status_summary_card.dart';
 
 class HomePage extends StatefulWidget {
   static route() => MaterialPageRoute(builder: (context) => HomePage());
@@ -91,19 +93,45 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-                    child: Row(
-                      children: [
-                        StatusSummaryCard(
+                    child: SummaryStatsSection(
+                      items: [
+                        SummaryStatItem(
+                          label: "Total",
+                          count: state.stats.issueCount,
+                          color: ColorPalette.editAction,
+                          icon: Icons.assignment_outlined,
+                        ),
+
+                        SummaryStatItem(
                           label: "Open",
                           count: state.stats.openCount,
+                          color: ColorPalette.statusOpen,
+                          icon: Icons.radio_button_unchecked,
                         ),
-                        StatusSummaryCard(
+
+                        SummaryStatItem(
                           label: "In Progress",
                           count: state.stats.inProgressCount,
+                          color: ColorPalette.statusInProgress,
+                          icon: Icons.sync,
                         ),
-                        StatusSummaryCard(
+
+                        SummaryStatItem(
                           label: "Resolved",
                           count: state.stats.resolvedCount,
+                          color: ColorPalette.statusResolved,
+                          icon: Icons.check_circle_outline,
+                        ),
+
+                        SummaryStatItem(
+                          label: "Closed",
+                          count:
+                              (state.stats.issueCount -
+                              state.stats.openCount -
+                              state.stats.inProgressCount -
+                              state.stats.resolvedCount),
+                          color: ColorPalette.statusClosed,
+                          icon: Icons.lock_outline,
                         ),
                       ],
                     ),
