@@ -6,6 +6,7 @@ import 'package:pocket_desk/features/issue/data/mappers/issue_mapper.dart';
 import 'package:pocket_desk/features/issue/data/models/issue_model.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
+import 'package:pocket_desk/features/issue/domain/entities/issue_query_params.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_stats.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/domain/repository/issue_repository.dart';
@@ -122,46 +123,32 @@ class IssueRepositoryImpl implements IssueRepository {
   }
 
   @override
-  Future<Either<Failure, List<Issue>>> filterIssues({
-    required String userId,
-    IssueStatus? status,
-    IssuePriority? priority,
+  Future<Either<Failure, List<Issue>>> queryIssues({
+    required IssueQueryParams params,
   }) async {
     try {
-      final issues = issueLocalDatasource.getIssues(userId);
+      final issues = issueLocalDatasource.getIssues(params.userId);
+
+      final q = params.query.toLowerCase().trim();
 
       final resultIssues = issues.where((issue) {
-        final statusMatch = status == null || issue.status == status.toData();
-        final priorityMatch =
-            priority == null || issue.priority == priority.toData();
-        return statusMatch && priorityMatch;
-      }).toList();
-
-      return right(resultIssues.map((issue) => issue.toEntity()).toList());
-    } on ServerException catch (e) {
-      return left(Failure(e.message));
-    } catch (e) {
-      return left(Failure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<Issue>>> searchIssues({
-    required String userId,
-    required String query,
-  }) async {
-    try {
-      final issues = issueLocalDatasource.getIssues(userId);
-
-      final q = query.toLowerCase();
-
-      final resultIssues = issues.where((issue) {
-        return issue.title.toLowerCase().contains(q) ||
+        final matchesSearch =
+            q.isEmpty ||
+            issue.title.toLowerCase().contains(q) ||
             (issue.description?.toLowerCase().contains(q) ?? false) ||
             issue.id.toLowerCase().contains(q);
+
+        final matchesStatus =
+            params.status == null || issue.status == params.status!.toData();
+
+        final matchesPriority =
+            params.priority == null ||
+            issue.priority == params.priority!.toData();
+
+        return matchesSearch && matchesStatus && matchesPriority;
       }).toList();
 
-      return right(resultIssues.map((issue) => issue.toEntity()).toList());
+      return right(resultIssues.map((e) => e.toEntity()).toList());
     } on ServerException catch (e) {
       return left(Failure(e.message));
     } catch (e) {

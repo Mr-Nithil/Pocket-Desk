@@ -2,14 +2,14 @@ import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
+import 'package:pocket_desk/features/issue/domain/entities/issue_query_params.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_stats.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_delete.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
-import 'package:pocket_desk/features/issue/domain/usecases/issue_filter.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_get_stats.dart';
-import 'package:pocket_desk/features/issue/domain/usecases/issue_search.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_query.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_update.dart';
 
 part 'issue_event.dart';
@@ -20,32 +20,32 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
   final IssueFetchAll _issueFetchAll;
   final IssueUpdate _issueUpdate;
   final IssueDelete _issueDelete;
-  final IssueSearch _issueSearch;
-  final IssueFilter _issueFilter;
   final IssueGetStats _issueGetStats;
+  final IssueQuery _issueQuery;
+
+  String _query = '';
+  IssueStatus? _status;
+  IssuePriority? _priority;
 
   IssueBloc({
     required IssueCreate issueCreate,
     required IssueFetchAll issueFetchAll,
     required IssueUpdate issueUpdate,
     required IssueDelete issueDelete,
-    required IssueSearch issueSearch,
-    required IssueFilter issueFilter,
     required IssueGetStats issueGetStats,
+    required IssueQuery issueQuery,
   }) : _issueCreate = issueCreate,
        _issueFetchAll = issueFetchAll,
        _issueUpdate = issueUpdate,
        _issueDelete = issueDelete,
-       _issueSearch = issueSearch,
-       _issueFilter = issueFilter,
        _issueGetStats = issueGetStats,
+       _issueQuery = issueQuery,
        super(IssueInitial()) {
     on<AddIssueEvent>(_onAddIssue);
     on<LoadIssuesEvent>(_onLoadIssues);
     on<UpdateIssueEvent>(_onUpdateIssue);
     on<DeleteIssueEvent>(_onDeleteIssue);
-    on<SearchIssuesEvent>(_onSearchIssues);
-    on<FilterIssuesEvent>(_onFilterIssues);
+    on<ApplyIssueQueryEvent>(_onApplyIssueQuery);
   }
 
   Future<void> _emitLoadedIssues({
@@ -132,38 +132,20 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
     });
   }
 
-  Future<void> _onSearchIssues(
-    SearchIssuesEvent event,
+  Future<void> _onApplyIssueQuery(
+    ApplyIssueQueryEvent event,
     Emitter<IssueState> emit,
   ) async {
-    emit(IssueLoading());
+    _query = event.query;
+    _status = event.status;
+    _priority = event.priority;
 
-    final issuesRes = await _issueSearch(
-      IssueSearchParams(userId: event.userId, query: event.query),
-    );
-
-    final statsRes = await _issueGetStats(
-      IssueGetStatsParams(userId: event.userId),
-    );
-
-    issuesRes.fold((l) => emit(IssueFailure(l.message)), (issues) {
-      statsRes.fold((l) => emit(IssueFailure(l.message)), (stats) {
-        emit(IssueLoaded(issues: issues, stats: stats));
-      });
-    });
-  }
-
-  Future<void> _onFilterIssues(
-    FilterIssuesEvent event,
-    Emitter<IssueState> emit,
-  ) async {
-    emit(IssueLoading());
-
-    final issuesRes = await _issueFilter(
-      IssueFilterParams(
+    final res = await _issueQuery(
+      IssueQueryParams(
         userId: event.userId,
-        status: event.status,
-        priority: event.priority,
+        query: _query,
+        status: _status,
+        priority: _priority,
       ),
     );
 
@@ -171,7 +153,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
       IssueGetStatsParams(userId: event.userId),
     );
 
-    issuesRes.fold((l) => emit(IssueFailure(l.message)), (issues) {
+    res.fold((l) => emit(IssueFailure(l.message)), (issues) {
       statsRes.fold((l) => emit(IssueFailure(l.message)), (stats) {
         emit(IssueLoaded(issues: issues, stats: stats));
       });

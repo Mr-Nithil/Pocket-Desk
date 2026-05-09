@@ -54,17 +54,16 @@ class UpdateIssueEvent extends IssueEvent {
   });
 }
 
-class SearchIssuesEvent extends IssueEvent {
+class ApplyIssueQueryEvent extends IssueEvent {
   final String userId;
   final String query;
-
-  SearchIssuesEvent({required this.userId, required this.query});
-}
-
-class FilterIssuesEvent extends IssueEvent {
-  final String userId;
   final IssueStatus? status;
   final IssuePriority? priority;
 
-  FilterIssuesEvent({required this.userId, this.status, this.priority});
+  ApplyIssueQueryEvent({
+    required this.userId,
+    this.query = '',
+    this.status,
+    this.priority,
+  });
 }

@@ -12,6 +12,7 @@ import 'package:pocket_desk/features/issue/domain/entities/summary_stat_item.dar
 
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 import 'package:pocket_desk/features/issue/presentation/pages/issue_view_page.dart';
+import 'package:pocket_desk/features/issue/presentation/widgets/compact_filter_chip.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/show_filter_bottom_sheet.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/summary_stat_section.dart';
 
@@ -139,79 +140,157 @@ class _HomePageState extends State<HomePage> {
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (value) {
-                              if (value.trim().isEmpty) {
-                                context.read<IssueBloc>().add(
-                                  LoadIssuesEvent(userId: userId!),
-                                );
-                              } else {
-                                context.read<IssueBloc>().add(
-                                  SearchIssuesEvent(
-                                    userId: userId!,
-                                    query: value,
-                                  ),
-                                );
-                              }
-                            },
-                            decoration: InputDecoration(
-                              hintText: "Search issues...",
-                              prefixIcon: const Icon(Icons.search),
-                              suffixIcon: _searchController.text.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(Icons.clear),
-                                      onPressed: () {
-                                        _searchController.clear();
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              style: const TextStyle(fontSize: 15),
+                              onChanged: (value) {
+                                if (value.trim().isEmpty &&
+                                    selectedStatus == null &&
+                                    selectedPriority == null) {
+                                  context.read<IssueBloc>().add(
+                                    LoadIssuesEvent(userId: userId!),
+                                  );
+                                } else {
+                                  context.read<IssueBloc>().add(
+                                    ApplyIssueQueryEvent(
+                                      userId: userId!,
+                                      query: value.trim(),
+                                      status: selectedStatus,
+                                      priority: selectedPriority,
+                                    ),
+                                  );
+                                }
+                              },
+                              decoration: InputDecoration(
+                                hintText: "Search issues...",
+                                prefixIcon: const Icon(Icons.search, size: 22),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear, size: 20),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          setState(() {
+                                            selectedStatus = null;
+                                            selectedPriority = null;
+                                          });
+                                          context.read<IssueBloc>().add(
+                                            LoadIssuesEvent(userId: userId!),
+                                          );
+                                        },
+                                      )
+                                    : null,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                  horizontal: 12,
+                                ),
+                              ),
+                            ),
+                          ),
 
+                          if (selectedStatus != null ||
+                              selectedPriority != null) ...[
+                            const SizedBox(width: 6),
+                            SizedBox(
+                              width: 110,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (selectedStatus != null)
+                                    CompactFilterChip(
+                                      label: selectedStatus!.uiName,
+                                      color: selectedStatus!.color,
+                                      onRemove: () {
+                                        setState(() => selectedStatus = null);
                                         context.read<IssueBloc>().add(
-                                          LoadIssuesEvent(userId: userId!),
+                                          ApplyIssueQueryEvent(
+                                            userId: userId!,
+                                            query: _searchController.text,
+                                            status: null,
+                                            priority: selectedPriority,
+                                          ),
                                         );
-
-                                        setState(() {});
                                       },
-                                    )
-                                  : null,
-                              border: OutlineInputBorder(
+                                    ),
+                                  if (selectedStatus != null &&
+                                      selectedPriority != null)
+                                    const SizedBox(height: 4),
+                                  if (selectedPriority != null)
+                                    CompactFilterChip(
+                                      label: selectedPriority!.uiName,
+                                      color: selectedPriority!.color,
+                                      onRemove: () {
+                                        setState(() => selectedPriority = null);
+                                        context.read<IssueBloc>().add(
+                                          ApplyIssueQueryEvent(
+                                            userId: userId!,
+                                            query: _searchController.text,
+                                            status: selectedStatus,
+                                            priority: null,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(width: 6),
+
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 12,
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.filter_alt_outlined,
+                                  size: 22,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                onPressed: () async {
+                                  final result = await showFilterBottomSheet(
+                                    context,
+                                    selectedStatus,
+                                    selectedPriority,
+                                  );
+                                  if (result != null) {
+                                    setState(() {
+                                      selectedStatus = result.$1;
+                                      selectedPriority = result.$2;
+                                    });
+                                    context.read<IssueBloc>().add(
+                                      ApplyIssueQueryEvent(
+                                        userId: userId!,
+                                        query: _searchController.text,
+                                        status: selectedStatus,
+                                        priority: selectedPriority,
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.filter_alt_outlined,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            onPressed: () {
-                              showFilterBottomSheet(
-                                context,
-                                selectedStatus,
-                                selectedPriority,
-                                userId,
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
+
                   const SizedBox(height: 20),
                   issues.isNotEmpty
                       ? Expanded(

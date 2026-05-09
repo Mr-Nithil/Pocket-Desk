@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
-import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 
-void showFilterBottomSheet(
+Future<(IssueStatus?, IssuePriority?)?> showFilterBottomSheet(
   BuildContext context,
   IssueStatus? selectedStatus,
   IssuePriority? selectedPriority,
-  String? userId,
 ) {
   IssueStatus? tempStatus = selectedStatus;
   IssuePriority? tempPriority = selectedPriority;
 
-  showModalBottomSheet(
+  return showModalBottomSheet<(IssueStatus?, IssuePriority?)>(
     context: context,
     isScrollControlled: true,
     builder: (context) {
@@ -33,90 +30,76 @@ void showFilterBottomSheet(
                 const SizedBox(height: 20),
 
                 DropdownButtonFormField<IssueStatus>(
+                  dropdownColor: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
                   value: tempStatus,
                   decoration: InputDecoration(
-                    labelText: "Status",
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
+                    labelText: "Status",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  dropdownColor: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  items: [
-                    for (final status in IssueStatus.values)
-                      DropdownMenuItem(
-                        value: status,
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: status.color,
-                                shape: BoxShape.circle,
-                              ),
+                  items: IssueStatus.values.map((status) {
+                    return DropdownMenuItem(
+                      value: status,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: status.color,
+                              shape: BoxShape.circle,
                             ),
-                            const SizedBox(width: 10),
-                            Text(status.uiName),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(status.uiName),
+                        ],
                       ),
-                  ],
+                    );
+                  }).toList(),
                   onChanged: (value) {
-                    setModalState(() {
-                      tempStatus = value;
-                    });
+                    setModalState(() => tempStatus = value);
                   },
                 ),
 
                 const SizedBox(height: 16),
 
                 DropdownButtonFormField<IssuePriority>(
+                  dropdownColor: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
                   value: tempPriority,
                   decoration: InputDecoration(
-                    labelText: "Priority",
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
+                    labelText: "Priority",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  dropdownColor: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  items: [
-                    for (final priority in IssuePriority.values)
-                      DropdownMenuItem(
-                        value: priority,
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: priority.color,
-                                shape: BoxShape.circle,
-                              ),
+                  items: IssuePriority.values.map((priority) {
+                    return DropdownMenuItem(
+                      value: priority,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: priority.color,
+                              shape: BoxShape.circle,
                             ),
-                            const SizedBox(width: 10),
-                            Text(priority.uiName),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(priority.uiName),
+                        ],
                       ),
-                  ],
+                    );
+                  }).toList(),
                   onChanged: (value) {
-                    setModalState(() {
-                      tempPriority = value;
-                    });
+                    setModalState(() => tempPriority = value);
                   },
                 ),
 
@@ -127,44 +110,22 @@ void showFilterBottomSheet(
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () {
-                          selectedStatus = null;
-                          selectedPriority = null;
-
-                          Navigator.pop(context);
-
-                          context.read<IssueBloc>().add(
-                            LoadIssuesEvent(userId: userId!),
-                          );
+                          Navigator.pop(context, (null, null));
                         },
                         child: const Text("Reset"),
                       ),
                     ),
-
                     const SizedBox(width: 12),
-
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          selectedStatus = tempStatus;
-                          selectedPriority = tempPriority;
-
-                          Navigator.pop(context);
-
-                          context.read<IssueBloc>().add(
-                            FilterIssuesEvent(
-                              userId: userId!,
-                              status: selectedStatus,
-                              priority: selectedPriority,
-                            ),
-                          );
+                          Navigator.pop(context, (tempStatus, tempPriority));
                         },
                         child: const Text("Apply"),
                       ),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 20),
               ],
             ),
           );

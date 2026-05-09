@@ -2,20 +2,15 @@ import 'package:fpdart/fpdart.dart';
 import 'package:pocket_desk/core/error/failure.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
+import 'package:pocket_desk/features/issue/domain/entities/issue_query_params.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_stats.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 
 abstract interface class IssueRepository {
   Future<Either<Failure, List<Issue>>> getIssues({required String userId});
   Future<Either<Failure, IssueStats>> getIssuesStats({required String userId});
-  Future<Either<Failure, List<Issue>>> searchIssues({
-    required String userId,
-    required String query,
-  });
-  Future<Either<Failure, List<Issue>>> filterIssues({
-    required String userId,
-    IssueStatus? status,
-    IssuePriority? priority,
+  Future<Either<Failure, List<Issue>>> queryIssues({
+    required IssueQueryParams params,
   });
   Future<Either<Failure, Issue>> addIssue({
     required String userId,

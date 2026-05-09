@@ -16,9 +16,8 @@ import 'package:pocket_desk/features/issue/domain/repository/issue_repository.da
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_delete.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
-import 'package:pocket_desk/features/issue/domain/usecases/issue_filter.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_get_stats.dart';
-import 'package:pocket_desk/features/issue/domain/usecases/issue_search.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_query.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_update.dart';
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,11 +103,7 @@ void _initIssue() {
   );
 
   serviceLocator.registerFactory(
-    () => IssueSearch(issueRepository: serviceLocator()),
-  );
-
-  serviceLocator.registerFactory(
-    () => IssueFilter(issueRepository: serviceLocator()),
+    () => IssueQuery(issueRepository: serviceLocator()),
   );
 
   serviceLocator.registerFactory(
@@ -121,9 +116,8 @@ void _initIssue() {
       issueFetchAll: serviceLocator(),
       issueUpdate: serviceLocator(),
       issueDelete: serviceLocator(),
-      issueSearch: serviceLocator(),
-      issueFilter: serviceLocator(),
       issueGetStats: serviceLocator(),
+      issueQuery: serviceLocator(),
     ),
   );
 }
