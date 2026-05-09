@@ -58,7 +58,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
 
     issuesRes.fold((l) => emit(IssueFailure(l.message)), (issues) {
       statsRes.fold((l) => emit(IssueFailure(l.message)), (stats) {
-        emit(IssueLoaded(issues, stats));
+        emit(IssueLoaded(issues: issues, stats: stats));
       });
     });
   }
@@ -148,7 +148,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
 
     issuesRes.fold((l) => emit(IssueFailure(l.message)), (issues) {
       statsRes.fold((l) => emit(IssueFailure(l.message)), (stats) {
-        emit(IssueLoaded(issues, stats));
+        emit(IssueLoaded(issues: issues, stats: stats));
       });
     });
   }
@@ -173,7 +173,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
 
     issuesRes.fold((l) => emit(IssueFailure(l.message)), (issues) {
       statsRes.fold((l) => emit(IssueFailure(l.message)), (stats) {
-        emit(IssueLoaded(issues, stats));
+        emit(IssueLoaded(issues: issues, stats: stats));
       });
     });
   }

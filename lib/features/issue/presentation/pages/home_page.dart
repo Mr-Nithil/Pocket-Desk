@@ -5,9 +5,12 @@ import 'package:pocket_desk/core/widgets/app_confirm_dialog.dart';
 import 'package:pocket_desk/core/widgets/loader.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_desk/features/auth/presentation/pages/login_page.dart';
+import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
+import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 import 'package:pocket_desk/features/issue/presentation/pages/issue_view_page.dart';
+import 'package:pocket_desk/features/issue/presentation/widgets/show_filter_bottom_sheet.dart';
 
 import 'add_edit_issue_page.dart';
 import '../widgets/issue_card.dart';
@@ -22,7 +25,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final TextEditingController _searchController = TextEditingController();
   String? userId;
+  IssueStatus? selectedStatus;
+  IssuePriority? selectedPriority;
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +41,12 @@ class _HomePageState extends State<HomePage> {
         LoadIssuesEvent(userId: authState.user.email),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -102,9 +115,38 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Expanded(
                           child: TextField(
+                            controller: _searchController,
+                            onChanged: (value) {
+                              if (value.trim().isEmpty) {
+                                context.read<IssueBloc>().add(
+                                  LoadIssuesEvent(userId: userId!),
+                                );
+                              } else {
+                                context.read<IssueBloc>().add(
+                                  SearchIssuesEvent(
+                                    userId: userId!,
+                                    query: value,
+                                  ),
+                                );
+                              }
+                            },
                             decoration: InputDecoration(
                               hintText: "Search issues...",
-                              prefixIcon: Icon(Icons.search),
+                              prefixIcon: const Icon(Icons.search),
+                              suffixIcon: _searchController.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () {
+                                        _searchController.clear();
+
+                                        context.read<IssueBloc>().add(
+                                          LoadIssuesEvent(userId: userId!),
+                                        );
+
+                                        setState(() {});
+                                      },
+                                    )
+                                  : null,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -129,7 +171,14 @@ class _HomePageState extends State<HomePage> {
                               Icons.filter_alt_outlined,
                               color: Theme.of(context).colorScheme.primary,
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              showFilterBottomSheet(
+                                context,
+                                selectedStatus,
+                                selectedPriority,
+                                userId,
+                              );
+                            },
                           ),
                         ),
                       ],

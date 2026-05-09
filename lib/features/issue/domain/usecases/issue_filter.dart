@@ -22,12 +22,8 @@ class IssueFilter implements UseCase<List<Issue>, IssueFilterParams> {
 
 class IssueFilterParams {
   final String userId;
-  final IssueStatus status;
-  final IssuePriority priority;
+  final IssueStatus? status;
+  final IssuePriority? priority;
 
-  IssueFilterParams({
-    required this.userId,
-    required this.status,
-    required this.priority,
-  });
+  IssueFilterParams({required this.userId, this.status, this.priority});
 }

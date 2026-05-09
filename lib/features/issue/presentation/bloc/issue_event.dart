@@ -63,12 +63,8 @@ class SearchIssuesEvent extends IssueEvent {
 
 class FilterIssuesEvent extends IssueEvent {
   final String userId;
-  final IssueStatus status;
-  final IssuePriority priority;
+  final IssueStatus? status;
+  final IssuePriority? priority;
 
-  FilterIssuesEvent({
-    required this.userId,
-    required this.status,
-    required this.priority,
-  });
+  FilterIssuesEvent({required this.userId, this.status, this.priority});
 }

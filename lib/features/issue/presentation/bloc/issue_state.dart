@@ -11,7 +11,7 @@ final class IssueLoaded extends IssueState {
   final List<Issue> issues;
   final IssueStats stats;
 
-  IssueLoaded(this.issues, this.stats);
+  IssueLoaded({required this.issues, required this.stats});
 }
 
 final class IssueFailure extends IssueState {

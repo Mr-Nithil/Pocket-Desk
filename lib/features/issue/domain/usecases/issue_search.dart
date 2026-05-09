@@ -10,7 +10,7 @@ class IssueSearch implements UseCase<List<Issue>, IssueSearchParams> {
   IssueSearch({required this.issueRepository});
   @override
   Future<Either<Failure, List<Issue>>> call(IssueSearchParams params) async {
-    throw await issueRepository.searchIssues(
+    return await issueRepository.searchIssues(
       userId: params.userId,
       query: params.query,
     );
