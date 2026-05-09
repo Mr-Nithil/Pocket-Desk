@@ -56,7 +56,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _refreshIssues(List<Issue> issues) async {
-    if (issues.length != 0) {
+    final hasActiveQuery =
+        _searchController.text.trim().isNotEmpty ||
+        selectedStatus != null ||
+        selectedPriority != null;
+
+    if (hasActiveQuery) {
       context.read<IssueBloc>().add(
         ApplyIssueQueryEvent(
           userId: userId!,
@@ -65,6 +70,8 @@ class _HomePageState extends State<HomePage> {
           priority: selectedPriority,
         ),
       );
+    } else if (issues.isNotEmpty) {
+      context.read<IssueBloc>().add(LoadIssuesEvent(userId: userId!));
     } else {
       context.read<IssueBloc>().add(CreateMockIssuesEvent(userId: userId!));
     }

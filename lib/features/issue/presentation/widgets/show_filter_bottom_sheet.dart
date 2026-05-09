@@ -17,7 +17,7 @@ Future<(IssueStatus?, IssuePriority?)?> showFilterBottomSheet(
       return StatefulBuilder(
         builder: (context, setModalState) {
           return Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
