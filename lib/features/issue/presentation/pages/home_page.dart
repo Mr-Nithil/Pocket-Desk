@@ -80,9 +80,18 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
                     child: Row(
                       children: [
-                        StatusSummaryCard(label: "Open", count: 12),
-                        StatusSummaryCard(label: "In Progress", count: 5),
-                        StatusSummaryCard(label: "Resolved", count: 28),
+                        StatusSummaryCard(
+                          label: "Open",
+                          count: state.stats.openCount,
+                        ),
+                        StatusSummaryCard(
+                          label: "In Progress",
+                          count: state.stats.inProgressCount,
+                        ),
+                        StatusSummaryCard(
+                          label: "Resolved",
+                          count: state.stats.resolvedCount,
+                        ),
                       ],
                     ),
                   ),

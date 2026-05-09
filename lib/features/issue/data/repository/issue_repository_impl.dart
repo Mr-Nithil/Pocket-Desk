@@ -6,6 +6,7 @@ import 'package:pocket_desk/features/issue/data/mappers/issue_mapper.dart';
 import 'package:pocket_desk/features/issue/data/models/issue_model.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
+import 'package:pocket_desk/features/issue/domain/entities/issue_stats.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/domain/repository/issue_repository.dart';
 
@@ -161,6 +162,43 @@ class IssueRepositoryImpl implements IssueRepository {
       }).toList();
 
       return right(resultIssues.map((issue) => issue.toEntity()).toList());
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, IssueStats>> getIssuesStats({
+    required String userId,
+  }) async {
+    try {
+      final issues = issueLocalDatasource.getIssues(userId);
+
+      final openIssues = issues.where((issue) {
+        final statusMatch = issue.status.toDomain() == IssueStatus.open;
+        return statusMatch;
+      }).toList();
+
+      final inProgressIssues = issues.where((issue) {
+        final statusMatch = issue.status.toDomain() == IssueStatus.inProgress;
+        return statusMatch;
+      }).toList();
+
+      final resolvedIssues = issues.where((issue) {
+        final statusMatch = issue.status.toDomain() == IssueStatus.resolved;
+        return statusMatch;
+      }).toList();
+
+      return right(
+        IssueStats(
+          issueCount: issues.length,
+          openCount: openIssues.length,
+          inProgressCount: inProgressIssues.length,
+          resolvedCount: resolvedIssues.length,
+        ),
+      );
     } on ServerException catch (e) {
       return left(Failure(e.message));
     } catch (e) {

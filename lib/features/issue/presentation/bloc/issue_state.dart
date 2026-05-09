@@ -9,8 +9,9 @@ final class IssueLoading extends IssueState {}
 
 final class IssueLoaded extends IssueState {
   final List<Issue> issues;
+  final IssueStats stats;
 
-  IssueLoaded(this.issues);
+  IssueLoaded(this.issues, this.stats);
 }
 
 final class IssueFailure extends IssueState {

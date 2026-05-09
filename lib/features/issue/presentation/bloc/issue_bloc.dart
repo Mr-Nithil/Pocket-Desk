@@ -2,11 +2,13 @@ import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
+import 'package:pocket_desk/features/issue/domain/entities/issue_stats.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_delete.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_filter.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_get_stats.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_search.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_update.dart';
 
@@ -20,6 +22,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
   final IssueDelete _issueDelete;
   final IssueSearch _issueSearch;
   final IssueFilter _issueFilter;
+  final IssueGetStats _issueGetStats;
 
   IssueBloc({
     required IssueCreate issueCreate,
@@ -28,12 +31,14 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
     required IssueDelete issueDelete,
     required IssueSearch issueSearch,
     required IssueFilter issueFilter,
+    required IssueGetStats issueGetStats,
   }) : _issueCreate = issueCreate,
        _issueFetchAll = issueFetchAll,
        _issueUpdate = issueUpdate,
        _issueDelete = issueDelete,
        _issueSearch = issueSearch,
        _issueFilter = issueFilter,
+       _issueGetStats = issueGetStats,
        super(IssueInitial()) {
     on<AddIssueEvent>(_onAddIssue);
     on<LoadIssuesEvent>(_onLoadIssues);
@@ -47,11 +52,14 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
     required String userId,
     required Emitter<IssueState> emit,
   }) async {
-    final res = await _issueFetchAll(IssueFetchAllParams(userId: userId));
+    final issuesRes = await _issueFetchAll(IssueFetchAllParams(userId: userId));
 
-    res.fold((l) => emit(IssueFailure(l.message)), (r) {
-      print('Loaded issue count: ${r.length}');
-      emit(IssueLoaded(r));
+    final statsRes = await _issueGetStats(IssueGetStatsParams(userId: userId));
+
+    issuesRes.fold((l) => emit(IssueFailure(l.message)), (issues) {
+      statsRes.fold((l) => emit(IssueFailure(l.message)), (stats) {
+        emit(IssueLoaded(issues, stats));
+      });
     });
   }
 
@@ -130,11 +138,19 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
   ) async {
     emit(IssueLoading());
 
-    final res = await _issueSearch(
+    final issuesRes = await _issueSearch(
       IssueSearchParams(userId: event.userId, query: event.query),
     );
 
-    res.fold((l) => emit(IssueFailure(l.message)), (r) => emit(IssueLoaded(r)));
+    final statsRes = await _issueGetStats(
+      IssueGetStatsParams(userId: event.userId),
+    );
+
+    issuesRes.fold((l) => emit(IssueFailure(l.message)), (issues) {
+      statsRes.fold((l) => emit(IssueFailure(l.message)), (stats) {
+        emit(IssueLoaded(issues, stats));
+      });
+    });
   }
 
   Future<void> _onFilterIssues(
@@ -143,7 +159,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
   ) async {
     emit(IssueLoading());
 
-    final res = await _issueFilter(
+    final issuesRes = await _issueFilter(
       IssueFilterParams(
         userId: event.userId,
         status: event.status,
@@ -151,6 +167,14 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
       ),
     );
 
-    res.fold((l) => emit(IssueFailure(l.message)), (r) => emit(IssueLoaded(r)));
+    final statsRes = await _issueGetStats(
+      IssueGetStatsParams(userId: event.userId),
+    );
+
+    issuesRes.fold((l) => emit(IssueFailure(l.message)), (issues) {
+      statsRes.fold((l) => emit(IssueFailure(l.message)), (stats) {
+        emit(IssueLoaded(issues, stats));
+      });
+    });
   }
 }
