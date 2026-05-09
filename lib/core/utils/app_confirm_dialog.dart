@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pocket_desk/config/theme/color_palette.dart';
+import 'package:pocket_desk/features/issue/presentation/pages/home_page.dart';
 
 class AppConfirmDialog {
   static Future<void> show({
@@ -31,7 +33,23 @@ class AppConfirmDialog {
                     shape: BoxShape.circle,
                   ),
                   child: primaryButtonText == "Delete"
-                      ? Icon(Icons.delete, color: colorScheme.error, size: 28)
+                      ? Icon(
+                          Icons.delete,
+                          color: ColorPalette.errorColor,
+                          size: 28,
+                        )
+                      : primaryButtonText == "Resolve"
+                      ? Icon(
+                          Icons.check_circle_outline,
+                          color: ColorPalette.successColor,
+                          size: 28,
+                        )
+                      : primaryButtonText == "Close"
+                      ? Icon(
+                          Icons.lock,
+                          color: ColorPalette.statusClosed,
+                          size: 28,
+                        )
                       : Icon(
                           Icons.info_outline,
                           color: colorScheme.primary,
@@ -79,10 +97,19 @@ class AppConfirmDialog {
                         onPressed: () {
                           Navigator.pop(context);
                           onConfirm();
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            HomePage.route(),
+                            (route) => false,
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryButtonText == "Delete"
-                              ? colorScheme.error
+                              ? ColorPalette.errorColor
+                              : primaryButtonText == "Resolve"
+                              ? ColorPalette.successColor
+                              : primaryButtonText == "Close"
+                              ? ColorPalette.statusClosed
                               : colorScheme.primary,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(

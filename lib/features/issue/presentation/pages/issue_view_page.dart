@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:pocket_desk/config/theme/color_palette.dart';
+import 'package:pocket_desk/core/utils/app_confirm_dialog.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
 import 'package:pocket_desk/features/issue/presentation/pages/add_edit_issue_page.dart';
-import 'package:pocket_desk/features/issue/presentation/pages/home_page.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/priority_chip.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/section_card.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/status_chip.dart';
@@ -26,7 +26,7 @@ class IssueViewPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Issue Details")),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 52),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -160,11 +160,10 @@ class IssueViewPage extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.edit_outlined),
-                    label: const Text("Edit Issue"),
+                    label: Text("Edit", style: TextStyle(fontSize: 10)),
                   ),
                 ),
-                const SizedBox(width: 12),
-
+                const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
@@ -178,22 +177,24 @@ class IssueViewPage extends StatelessWidget {
                     onPressed: issue.status == IssueStatus.resolved
                         ? null
                         : () {
-                            context.read<IssueBloc>().add(
-                              UpdateIssueEvent(
-                                id: issue.id,
-                                userId: issue.userId,
-                                title: issue.title,
-                                description: issue.description,
-                                status: IssueStatus.resolved,
-                                priority: issue.priority,
-                                optionalAssignee: issue.optionalAssignee,
-                              ),
-                            );
-
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              HomePage.route(),
-                              (route) => false,
+                            AppConfirmDialog.show(
+                              context: context,
+                              message:
+                                  "Warning: Are you sure you want to resolve this issue?",
+                              primaryButtonText: "Resolve",
+                              onConfirm: () {
+                                context.read<IssueBloc>().add(
+                                  UpdateIssueEvent(
+                                    id: issue.id,
+                                    userId: issue.userId,
+                                    title: issue.title,
+                                    description: issue.description,
+                                    status: IssueStatus.resolved,
+                                    priority: issue.priority,
+                                    optionalAssignee: issue.optionalAssignee,
+                                  ),
+                                );
+                              },
                             );
                           },
 
@@ -202,6 +203,49 @@ class IssueViewPage extends StatelessWidget {
                       issue.status == IssueStatus.resolved
                           ? "Resolved"
                           : "Resolve",
+                      style: TextStyle(fontSize: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorPalette.statusClosed,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: ColorPalette.statusClosed
+                          .withOpacity(0.3),
+                      disabledForegroundColor: Colors.white70,
+                    ),
+
+                    onPressed: issue.status == IssueStatus.closed
+                        ? null
+                        : () {
+                            AppConfirmDialog.show(
+                              context: context,
+                              message:
+                                  "Warning: Are you sure you want to close this issue?",
+                              primaryButtonText: "Close",
+                              onConfirm: () {
+                                context.read<IssueBloc>().add(
+                                  UpdateIssueEvent(
+                                    id: issue.id,
+                                    userId: issue.userId,
+                                    title: issue.title,
+                                    description: issue.description,
+                                    status: IssueStatus.closed,
+                                    priority: issue.priority,
+                                    optionalAssignee: issue.optionalAssignee,
+                                  ),
+                                );
+                              },
+                            );
+                          },
+
+                    icon: const Icon(Icons.lock),
+                    label: Text(
+                      issue.status == IssueStatus.resolved ? "Closed" : "Close",
+                      style: TextStyle(fontSize: 10),
                     ),
                   ),
                 ),
