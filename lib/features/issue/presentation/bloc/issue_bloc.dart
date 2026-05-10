@@ -10,6 +10,7 @@ import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create_mock.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_delete.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_export_csv.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_get_stats.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_query.dart';
@@ -26,6 +27,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
   final IssueGetStats _issueGetStats;
   final IssueQuery _issueQuery;
   final IssueCreateMock _issueCreateMock;
+  final IssueExportCsv _issueExportCsv;
 
   String _query = '';
   IssueStatus? _status;
@@ -39,6 +41,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
     required IssueGetStats issueGetStats,
     required IssueQuery issueQuery,
     required IssueCreateMock issueCreateMock,
+    required IssueExportCsv issueExportCsv,
   }) : _issueCreate = issueCreate,
        _issueFetchAll = issueFetchAll,
        _issueUpdate = issueUpdate,
@@ -46,6 +49,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
        _issueGetStats = issueGetStats,
        _issueQuery = issueQuery,
        _issueCreateMock = issueCreateMock,
+       _issueExportCsv = issueExportCsv,
        super(IssueInitial()) {
     on<AddIssueEvent>(_onAddIssue);
     on<LoadIssuesEvent>(_onLoadIssues);
@@ -53,6 +57,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
     on<DeleteIssueEvent>(_onDeleteIssue);
     on<ApplyIssueQueryEvent>(_onApplyIssueQuery);
     on<CreateMockIssuesEvent>(_onCreateMockIssues);
+    on<ExportIssuesCsvEvent>(_onExportIssuesCsv);
   }
 
   Future<void> _emitLoadedIssues({
@@ -185,6 +190,23 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
       statsRes.fold((l) => emit(IssueFailure(l.message)), (stats) {
         emit(IssueLoaded(issues: issues, stats: stats));
       });
+    });
+  }
+
+  Future<void> _onExportIssuesCsv(
+    ExportIssuesCsvEvent event,
+    Emitter<IssueState> emit,
+  ) async {
+    final previousState = state;
+    emit(IssueLoading());
+
+    final res = await _issueExportCsv(
+      IssueExportCsvParams(userId: event.userId),
+    );
+
+    res.fold((l) => emit(IssueFailure(l.message)), (file) {
+      emit(IssueExportSuccess(exportedFile: file));
+      if (previousState is IssueLoaded) emit(previousState);
     });
   }
 }

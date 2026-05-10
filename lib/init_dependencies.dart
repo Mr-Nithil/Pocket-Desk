@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pocket_desk/core/cubits/theme_cubit.dart';
+import 'package:pocket_desk/core/services/csv_export_service.dart';
 import 'package:pocket_desk/core/services/image_storage_service.dart';
 import 'package:pocket_desk/features/auth/data/datasources/mock_auth_datasource.dart';
 import 'package:pocket_desk/features/auth/data/repository/auth_repository_impl.dart';
@@ -18,6 +19,7 @@ import 'package:pocket_desk/features/issue/domain/repository/issue_repository.da
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_create_mock.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_delete.dart';
+import 'package:pocket_desk/features/issue/domain/usecases/issue_export_csv.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_fetch_all.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_get_stats.dart';
 import 'package:pocket_desk/features/issue/domain/usecases/issue_query.dart';
@@ -42,6 +44,10 @@ Future<void> initDependencies() async {
 void _initCore() {
   serviceLocator.registerLazySingleton<ImageStorageService>(
     () => ImageStorageServiceImpl(),
+  );
+
+  serviceLocator.registerLazySingleton<CsvExportService>(
+    () => CsvExportServiceImpl(),
   );
 }
 
@@ -104,6 +110,7 @@ void _initIssue() {
     () => IssueRepositoryImpl(
       issueLocalDatasource: serviceLocator(),
       imageStorageService: serviceLocator(),
+      csvExportService: serviceLocator(),
     ),
   );
 
@@ -136,6 +143,10 @@ void _initIssue() {
   );
 
   serviceLocator.registerFactory(
+    () => IssueExportCsv(issueRepository: serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
     () => IssueBloc(
       issueCreate: serviceLocator(),
       issueFetchAll: serviceLocator(),
@@ -144,6 +155,7 @@ void _initIssue() {
       issueGetStats: serviceLocator(),
       issueQuery: serviceLocator(),
       issueCreateMock: serviceLocator(),
+      issueExportCsv: serviceLocator(),
     ),
   );
 }

@@ -18,6 +18,7 @@ import 'package:pocket_desk/features/issue/presentation/pages/issue_view_page.da
 import 'package:pocket_desk/features/issue/presentation/widgets/compact_filter_chip.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/show_filter_bottom_sheet.dart';
 import 'package:pocket_desk/features/issue/presentation/widgets/summary_stat_section.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'add_edit_issue_page.dart';
 import '../widgets/issue_card.dart';
@@ -93,604 +94,662 @@ class _HomePageState extends State<HomePage> {
           );
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("PocketDesk"),
-          actions: [
-            BlocBuilder<ThemeCubit, ThemeMode>(
-              builder: (context, mode) {
-                final isDark =
-                    mode == ThemeMode.dark ||
-                    (mode == ThemeMode.system &&
-                        Theme.of(context).brightness == Brightness.dark);
+      child: BlocListener<IssueBloc, IssueState>(
+        listener: (context, state) {
+          if (state is IssueExportSuccess) {
+            SharePlus.instance.share(
+              ShareParams(
+                files: [XFile(state.exportedFile.path)],
+                subject: 'PocketDesk Issues Export',
+                text: 'Issues exported from PocketDesk',
+              ),
+            );
+          }
+          if (state is IssueFailure) {
+            showSnackBar(context, state.message);
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text("PocketDesk"),
+            actions: [
+              BlocBuilder<ThemeCubit, ThemeMode>(
+                builder: (context, mode) {
+                  final isDark =
+                      mode == ThemeMode.dark ||
+                      (mode == ThemeMode.system &&
+                          Theme.of(context).brightness == Brightness.dark);
 
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: PopupMenuButton<HomePageMenuAction>(
-                    tooltip: 'Open menu',
-                    icon: const Icon(Icons.menu_rounded),
-                    position: PopupMenuPosition.under,
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: Theme.of(context).colorScheme.outline,
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: PopupMenuButton<HomePageMenuAction>(
+                      tooltip: 'Open menu',
+                      icon: const Icon(Icons.menu_rounded),
+                      position: PopupMenuPosition.under,
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
                       ),
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 240,
-                      maxWidth: 240,
-                    ),
-                    color: Theme.of(context).colorScheme.surface,
-                    onSelected: (value) {
-                      if (value == HomePageMenuAction.toggleTheme) {
-                        context.read<ThemeCubit>().toggleTheme();
-                      }
-                      if (value == HomePageMenuAction.signOut) {
-                        context.read<AuthBloc>().add(AuthLogOut());
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem<HomePageMenuAction>(
-                        enabled: false,
-                        height: 124,
-                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              CircleAvatar(
-                                radius: 24,
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primaryContainer,
-                                foregroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary,
-                                child: const Icon(
-                                  Icons.person_rounded,
-                                  size: 24,
+                      constraints: const BoxConstraints(
+                        minWidth: 240,
+                        maxWidth: 240,
+                      ),
+                      color: Theme.of(context).colorScheme.surface,
+                      onSelected: (value) {
+                        if (value == HomePageMenuAction.toggleTheme) {
+                          context.read<ThemeCubit>().toggleTheme();
+                        }
+                        if (value == HomePageMenuAction.signOut) {
+                          context.read<AuthBloc>().add(AuthLogOut());
+                        }
+                        if (value == HomePageMenuAction.exportCsv) {
+                          if (userId != null) {
+                            context.read<IssueBloc>().add(
+                              ExportIssuesCsvEvent(userId: userId!),
+                            );
+                          }
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem<HomePageMenuAction>(
+                          enabled: false,
+                          height: 124,
+                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  child: const Icon(
+                                    Icons.person_rounded,
+                                    size: 24,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Logged in as',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.labelMedium,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                userId ?? '',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.titleSmall,
-                              ),
-                            ],
+                                const SizedBox(height: 10),
+                                Text(
+                                  'Logged in as',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.labelMedium,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  userId ?? '',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const PopupMenuDivider(),
-                      PopupMenuItem<HomePageMenuAction>(
-                        height: 44,
-                        value: HomePageMenuAction.toggleTheme,
-                        child: ListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          minLeadingWidth: 0,
-                          leading: Icon(
-                            isDark
-                                ? Icons.light_mode_rounded
-                                : Icons.dark_mode_rounded,
-                            size: 20,
+                        const PopupMenuDivider(),
+                        PopupMenuItem<HomePageMenuAction>(
+                          height: 44,
+                          value: HomePageMenuAction.toggleTheme,
+                          child: ListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            minLeadingWidth: 0,
+                            leading: Icon(
+                              isDark
+                                  ? Icons.light_mode_rounded
+                                  : Icons.dark_mode_rounded,
+                              size: 20,
+                            ),
+                            title: Text(
+                              isDark
+                                  ? 'Switch to light mode'
+                                  : 'Switch to dark mode',
+                            ),
                           ),
-                          title: Text(
-                            isDark
-                                ? 'Switch to light mode'
-                                : 'Switch to dark mode',
+                        ),
+                        PopupMenuItem<HomePageMenuAction>(
+                          height: 44,
+                          value: HomePageMenuAction.exportCsv,
+                          child: const ListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            minLeadingWidth: 0,
+                            leading: Icon(Icons.download_rounded, size: 20),
+                            title: Text('Export as CSV'),
                           ),
                         ),
-                      ),
-                      PopupMenuItem<HomePageMenuAction>(
-                        height: 44,
-                        value: HomePageMenuAction.signOut,
-                        child: const ListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          minLeadingWidth: 0,
-                          leading: Icon(Icons.logout_rounded, size: 20),
-                          title: Text('Sign out'),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        body: BlocConsumer<IssueBloc, IssueState>(
-          listener: (context, state) {
-            if (state is IssueFailure) {
-              showSnackBar(context, state.message);
-            } else if (state is IssueLoading) {
-              Loader();
-            }
-          },
-          builder: (context, state) {
-            if (state is IssueLoaded) {
-              final issues = state.issues;
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-                    child: SummaryStatsSection(
-                      items: [
-                        SummaryStatItem(
-                          label: "Total",
-                          count: state.stats.issueCount,
-                          color: ColorPalette.editAction,
-                          icon: Icons.assignment_outlined,
-                        ),
-
-                        SummaryStatItem(
-                          label: "Open",
-                          count: state.stats.openCount,
-                          color: ColorPalette.statusOpen,
-                          icon: Icons.radio_button_unchecked,
-                        ),
-
-                        SummaryStatItem(
-                          label: "In Progress",
-                          count: state.stats.inProgressCount,
-                          color: ColorPalette.statusInProgress,
-                          icon: Icons.sync,
-                        ),
-
-                        SummaryStatItem(
-                          label: "Resolved",
-                          count: state.stats.resolvedCount,
-                          color: ColorPalette.statusResolved,
-                          icon: Icons.check_circle_outline,
-                        ),
-
-                        SummaryStatItem(
-                          label: "Closed",
-                          count:
-                              (state.stats.issueCount -
-                              state.stats.openCount -
-                              state.stats.inProgressCount -
-                              state.stats.resolvedCount),
-                          color: ColorPalette.statusClosed,
-                          icon: Icons.lock_outline,
+                        PopupMenuItem<HomePageMenuAction>(
+                          height: 44,
+                          value: HomePageMenuAction.signOut,
+                          child: const ListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            minLeadingWidth: 0,
+                            leading: Icon(Icons.logout_rounded, size: 20),
+                            title: Text('Sign out'),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              style: const TextStyle(fontSize: 15),
-                              onChanged: (value) {
-                                if (value.trim().isEmpty &&
-                                    selectedStatus == null &&
-                                    selectedPriority == null) {
-                                  context.read<IssueBloc>().add(
-                                    LoadIssuesEvent(userId: userId!),
-                                  );
-                                } else {
-                                  context.read<IssueBloc>().add(
-                                    ApplyIssueQueryEvent(
-                                      userId: userId!,
-                                      query: value.trim(),
-                                      status: selectedStatus,
-                                      priority: selectedPriority,
-                                    ),
-                                  );
-                                }
-                              },
-                              decoration: InputDecoration(
-                                hintText: "Search issues...",
-                                prefixIcon: const Icon(Icons.search, size: 22),
-                                suffixIcon: _searchController.text.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.clear, size: 20),
-                                        onPressed: () {
-                                          _searchController.clear();
-                                          setState(() {
-                                            selectedStatus = null;
-                                            selectedPriority = null;
-                                          });
-                                          context.read<IssueBloc>().add(
-                                            LoadIssuesEvent(userId: userId!),
-                                          );
-                                        },
-                                      )
-                                    : null,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                  horizontal: 12,
-                                ),
-                              ),
-                            ),
+                  );
+                },
+              ),
+            ],
+          ),
+          body: BlocConsumer<IssueBloc, IssueState>(
+            listener: (context, state) {
+              if (state is IssueFailure) {
+                showSnackBar(context, state.message);
+              } else if (state is IssueLoading) {
+                Loader();
+              }
+            },
+            builder: (context, state) {
+              if (state is IssueLoaded) {
+                final issues = state.issues;
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                      child: SummaryStatsSection(
+                        items: [
+                          SummaryStatItem(
+                            label: "Total",
+                            count: state.stats.issueCount,
+                            color: ColorPalette.editAction,
+                            icon: Icons.assignment_outlined,
                           ),
 
-                          if (selectedStatus != null ||
-                              selectedPriority != null) ...[
-                            const SizedBox(width: 6),
-                            SizedBox(
-                              width: 110,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  if (selectedStatus != null)
-                                    CompactFilterChip(
-                                      label: selectedStatus!.uiName,
-                                      color: selectedStatus!.color,
-                                      onRemove: () {
-                                        setState(() => selectedStatus = null);
-                                        context.read<IssueBloc>().add(
-                                          ApplyIssueQueryEvent(
-                                            userId: userId!,
-                                            query: _searchController.text,
-                                            status: null,
-                                            priority: selectedPriority,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  if (selectedStatus != null &&
-                                      selectedPriority != null)
-                                    const SizedBox(height: 4),
-                                  if (selectedPriority != null)
-                                    CompactFilterChip(
-                                      label: selectedPriority!.uiName,
-                                      color: selectedPriority!.color,
-                                      onRemove: () {
-                                        setState(() => selectedPriority = null);
-                                        context.read<IssueBloc>().add(
-                                          ApplyIssueQueryEvent(
-                                            userId: userId!,
-                                            query: _searchController.text,
-                                            status: selectedStatus,
-                                            priority: null,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ],
+                          SummaryStatItem(
+                            label: "Open",
+                            count: state.stats.openCount,
+                            color: ColorPalette.statusOpen,
+                            icon: Icons.radio_button_unchecked,
+                          ),
 
-                          const SizedBox(width: 6),
+                          SummaryStatItem(
+                            label: "In Progress",
+                            count: state.stats.inProgressCount,
+                            color: ColorPalette.statusInProgress,
+                            icon: Icons.sync,
+                          ),
 
-                          AspectRatio(
-                            aspectRatio: 1,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.filter_alt_outlined,
-                                  size: 22,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                                onPressed: () async {
-                                  final result = await showFilterBottomSheet(
-                                    context,
-                                    selectedStatus,
-                                    selectedPriority,
-                                  );
-                                  if (result != null) {
-                                    setState(() {
-                                      selectedStatus = result.$1;
-                                      selectedPriority = result.$2;
-                                    });
+                          SummaryStatItem(
+                            label: "Resolved",
+                            count: state.stats.resolvedCount,
+                            color: ColorPalette.statusResolved,
+                            icon: Icons.check_circle_outline,
+                          ),
+
+                          SummaryStatItem(
+                            label: "Closed",
+                            count:
+                                (state.stats.issueCount -
+                                state.stats.openCount -
+                                state.stats.inProgressCount -
+                                state.stats.resolvedCount),
+                            color: ColorPalette.statusClosed,
+                            icon: Icons.lock_outline,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _searchController,
+                                style: const TextStyle(fontSize: 15),
+                                onChanged: (value) {
+                                  if (value.trim().isEmpty &&
+                                      selectedStatus == null &&
+                                      selectedPriority == null) {
+                                    context.read<IssueBloc>().add(
+                                      LoadIssuesEvent(userId: userId!),
+                                    );
+                                  } else {
                                     context.read<IssueBloc>().add(
                                       ApplyIssueQueryEvent(
                                         userId: userId!,
-                                        query: _searchController.text,
+                                        query: value.trim(),
                                         status: selectedStatus,
                                         priority: selectedPriority,
                                       ),
                                     );
                                   }
                                 },
+                                decoration: InputDecoration(
+                                  hintText: "Search issues...",
+                                  prefixIcon: const Icon(
+                                    Icons.search,
+                                    size: 22,
+                                  ),
+                                  suffixIcon: _searchController.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: const Icon(
+                                            Icons.clear,
+                                            size: 20,
+                                          ),
+                                          onPressed: () {
+                                            _searchController.clear();
+                                            setState(() {
+                                              selectedStatus = null;
+                                              selectedPriority = null;
+                                            });
+                                            context.read<IssueBloc>().add(
+                                              LoadIssuesEvent(userId: userId!),
+                                            );
+                                          },
+                                        )
+                                      : null,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                    horizontal: 12,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+
+                            if (selectedStatus != null ||
+                                selectedPriority != null) ...[
+                              const SizedBox(width: 6),
+                              SizedBox(
+                                width: 110,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    if (selectedStatus != null)
+                                      CompactFilterChip(
+                                        label: selectedStatus!.uiName,
+                                        color: selectedStatus!.color,
+                                        onRemove: () {
+                                          setState(() => selectedStatus = null);
+                                          context.read<IssueBloc>().add(
+                                            ApplyIssueQueryEvent(
+                                              userId: userId!,
+                                              query: _searchController.text,
+                                              status: null,
+                                              priority: selectedPriority,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    if (selectedStatus != null &&
+                                        selectedPriority != null)
+                                      const SizedBox(height: 4),
+                                    if (selectedPriority != null)
+                                      CompactFilterChip(
+                                        label: selectedPriority!.uiName,
+                                        color: selectedPriority!.color,
+                                        onRemove: () {
+                                          setState(
+                                            () => selectedPriority = null,
+                                          );
+                                          context.read<IssueBloc>().add(
+                                            ApplyIssueQueryEvent(
+                                              userId: userId!,
+                                              query: _searchController.text,
+                                              status: selectedStatus,
+                                              priority: null,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+
+                            const SizedBox(width: 6),
+
+                            AspectRatio(
+                              aspectRatio: 1,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.filter_alt_outlined,
+                                    size: 22,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                                  onPressed: () async {
+                                    final result = await showFilterBottomSheet(
+                                      context,
+                                      selectedStatus,
+                                      selectedPriority,
+                                    );
+                                    if (result != null) {
+                                      setState(() {
+                                        selectedStatus = result.$1;
+                                        selectedPriority = result.$2;
+                                      });
+                                      context.read<IssueBloc>().add(
+                                        ApplyIssueQueryEvent(
+                                          userId: userId!,
+                                          query: _searchController.text,
+                                          status: selectedStatus,
+                                          priority: selectedPriority,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 20),
-                  issues.isNotEmpty
-                      ? Expanded(
-                          child: RefreshIndicator(
+                    const SizedBox(height: 20),
+                    issues.isNotEmpty
+                        ? Expanded(
+                            child: RefreshIndicator(
+                              onRefresh: () async {
+                                _refreshIssues(issues);
+                              },
+                              child: ListView.builder(
+                                itemCount: issues.length,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final issue = issues[index];
+                                  return IssueCard(
+                                    title: issue.title,
+                                    status: issue.status,
+                                    statusColor: issue.status.color,
+                                    code: issue.id,
+                                    date: issue.createdAt,
+                                    priority: issue.priority,
+                                    priorityColor: issue.priority.color,
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              IssueViewPage(issue: issue),
+                                        ),
+                                      );
+                                    },
+                                    onEdit: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              AddEditIssuePage(issue: issue),
+                                        ),
+                                      );
+                                    },
+                                    onDelete: () {
+                                      AppConfirmDialog.show(
+                                        context: context,
+                                        message:
+                                            "Warning: This will permanently erase this issue and all its content.",
+                                        primaryButtonText: "Delete",
+                                        onConfirm: () {
+                                          context.read<IssueBloc>().add(
+                                            DeleteIssueEvent(
+                                              userId: userId!,
+                                              id: issue.id,
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          )
+                        : RefreshIndicator(
                             onRefresh: () async {
                               _refreshIssues(issues);
                             },
-                            child: ListView.builder(
-                              itemCount: issues.length,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              itemBuilder: (context, index) {
-                                final issue = issues[index];
-                                return IssueCard(
-                                  title: issue.title,
-                                  status: issue.status,
-                                  statusColor: issue.status.color,
-                                  code: issue.id,
-                                  date: issue.createdAt,
-                                  priority: issue.priority,
-                                  priorityColor: issue.priority.color,
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            IssueViewPage(issue: issue),
-                                      ),
-                                    );
-                                  },
-                                  onEdit: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            AddEditIssuePage(issue: issue),
-                                      ),
-                                    );
-                                  },
-                                  onDelete: () {
-                                    AppConfirmDialog.show(
-                                      context: context,
-                                      message:
-                                          "Warning: This will permanently erase this issue and all its content.",
-                                      primaryButtonText: "Delete",
-                                      onConfirm: () {
-                                        context.read<IssueBloc>().add(
-                                          DeleteIssueEvent(
-                                            userId: userId!,
-                                            id: issue.id,
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child:
+                                  _searchController.text.isNotEmpty ||
+                                      selectedStatus != null ||
+                                      selectedPriority != null
+                                  ? Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 28,
                                           ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                );
-                              },
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.surface,
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                            border: Border.all(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.15),
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(
+                                                  Theme.of(
+                                                            context,
+                                                          ).brightness ==
+                                                          Brightness.dark
+                                                      ? 0.18
+                                                      : 0.05,
+                                                ),
+                                                blurRadius: 18,
+                                                offset: const Offset(0, 6),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  14,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                      .withOpacity(0.10),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Icons.inbox_outlined,
+                                                  size: 34,
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
+                                                ),
+                                              ),
+
+                                              const SizedBox(height: 16),
+
+                                              Text(
+                                                'No issues found',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                              ),
+
+                                              const SizedBox(height: 8),
+
+                                              Text(
+                                                'No matches found. Try adjusting your filters or search term.',
+                                                textAlign: TextAlign.center,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                                      height: 1.4,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 28,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.surface,
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                            border: Border.all(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.15),
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(
+                                                  Theme.of(
+                                                            context,
+                                                          ).brightness ==
+                                                          Brightness.dark
+                                                      ? 0.18
+                                                      : 0.05,
+                                                ),
+                                                blurRadius: 18,
+                                                offset: const Offset(0, 6),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  14,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                      .withOpacity(0.10),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Icons
+                                                      .arrow_circle_down_rounded,
+                                                  size: 34,
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
+                                                ),
+                                              ),
+
+                                              const SizedBox(height: 16),
+
+                                              Text(
+                                                'Welcome to PocketDesk',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                              ),
+
+                                              const SizedBox(height: 8),
+
+                                              Text(
+                                                'Your workspace is clean. Create a new issue to get started, or pull down to start.',
+                                                textAlign: TextAlign.center,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                                      height: 1.4,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ),
-                        )
-                      : RefreshIndicator(
-                          onRefresh: () async {
-                            _refreshIssues(issues);
-                          },
-                          child: SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child:
-                                _searchController.text.isNotEmpty ||
-                                    selectedStatus != null ||
-                                    selectedPriority != null
-                                ? Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(20),
-                                      child: Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 28,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.surface,
-                                          borderRadius: BorderRadius.circular(
-                                            20,
-                                          ),
-                                          border: Border.all(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .outline
-                                                .withOpacity(0.15),
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(
-                                                Theme.of(context).brightness ==
-                                                        Brightness.dark
-                                                    ? 0.18
-                                                    : 0.05,
-                                              ),
-                                              blurRadius: 18,
-                                              offset: const Offset(0, 6),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(14),
-                                              decoration: BoxDecoration(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                    .withOpacity(0.10),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Icon(
-                                                Icons.inbox_outlined,
-                                                size: 34,
-                                                color: Theme.of(
-                                                  context,
-                                                ).colorScheme.primary,
-                                              ),
-                                            ),
-
-                                            const SizedBox(height: 16),
-
-                                            Text(
-                                              'No issues found',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .titleMedium
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                            ),
-
-                                            const SizedBox(height: 8),
-
-                                            Text(
-                                              'No matches found. Try adjusting your filters or search term.',
-                                              textAlign: TextAlign.center,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurfaceVariant,
-                                                    height: 1.4,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                : Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(20),
-                                      child: Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 28,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.surface,
-                                          borderRadius: BorderRadius.circular(
-                                            20,
-                                          ),
-                                          border: Border.all(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .outline
-                                                .withOpacity(0.15),
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(
-                                                Theme.of(context).brightness ==
-                                                        Brightness.dark
-                                                    ? 0.18
-                                                    : 0.05,
-                                              ),
-                                              blurRadius: 18,
-                                              offset: const Offset(0, 6),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(14),
-                                              decoration: BoxDecoration(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                    .withOpacity(0.10),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Icon(
-                                                Icons.arrow_circle_down_rounded,
-                                                size: 34,
-                                                color: Theme.of(
-                                                  context,
-                                                ).colorScheme.primary,
-                                              ),
-                                            ),
-
-                                            const SizedBox(height: 16),
-
-                                            Text(
-                                              'Welcome to PocketDesk',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .titleMedium
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                            ),
-
-                                            const SizedBox(height: 8),
-
-                                            Text(
-                                              'Your workspace is clean. Create a new issue to get started, or pull down to start.',
-                                              textAlign: TextAlign.center,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurfaceVariant,
-                                                    height: 1.4,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                          ),
-                        ),
-                  SizedBox(height: 40),
-                ],
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 20, 10),
-          child: FloatingActionButton(
-            child: Icon(Icons.add),
-            onPressed: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => AddEditIssuePage()));
+                    SizedBox(height: 40),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
             },
           ),
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 20, 10),
+            child: FloatingActionButton(
+              child: Icon(Icons.add),
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => AddEditIssuePage()));
+              },
+            ),
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }

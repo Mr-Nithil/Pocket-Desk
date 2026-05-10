@@ -14,6 +14,7 @@ abstract interface class IssueRepository {
   Future<Either<Failure, List<Issue>>> createMockIssues({
     required String userId,
   });
+  Future<Either<Failure, File>> exportIssuesToCsv({required String userId});
   Future<Either<Failure, List<Issue>>> queryIssues({
     required IssueQueryParams params,
   });

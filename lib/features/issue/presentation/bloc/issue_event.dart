@@ -42,6 +42,12 @@ class DeleteIssueEvent extends IssueEvent {
   DeleteIssueEvent({required this.userId, required this.id});
 }
 
+class ExportIssuesCsvEvent extends IssueEvent {
+  final String userId;
+
+  ExportIssuesCsvEvent({required this.userId});
+}
+
 class UpdateIssueEvent extends IssueEvent {
   final String id;
   final String userId;

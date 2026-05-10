@@ -19,3 +19,9 @@ final class IssueFailure extends IssueState {
 
   IssueFailure(this.message);
 }
+
+final class IssueExportSuccess extends IssueState {
+  final File exportedFile;
+
+  IssueExportSuccess({required this.exportedFile});
+}

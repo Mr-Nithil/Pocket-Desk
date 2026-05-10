@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:fpdart/src/either.dart';
 import 'package:pocket_desk/core/error/exception.dart';
 import 'package:pocket_desk/core/error/failure.dart';
+import 'package:pocket_desk/core/services/csv_export_service.dart';
 import 'package:pocket_desk/core/services/image_storage_service.dart';
 import 'package:pocket_desk/features/issue/data/datasources/issue_local_datasource.dart';
 import 'package:pocket_desk/features/issue/data/mappers/issue_mapper.dart';
@@ -17,10 +18,12 @@ import 'package:pocket_desk/features/issue/domain/repository/issue_repository.da
 class IssueRepositoryImpl implements IssueRepository {
   final IssueLocalDatasource issueLocalDatasource;
   final ImageStorageService imageStorageService;
+  final CsvExportService csvExportService;
 
   IssueRepositoryImpl({
     required this.issueLocalDatasource,
     required this.imageStorageService,
+    required this.csvExportService,
   });
 
   @override
@@ -257,6 +260,21 @@ class IssueRepositoryImpl implements IssueRepository {
       final issues = issueLocalDatasource.getIssues(userId);
 
       return right(issues.map((issue) => issue.toEntity()).toList());
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, File>> exportIssuesToCsv({
+    required String userId,
+  }) async {
+    try {
+      final issues = issueLocalDatasource.getIssues(userId);
+      final file = await csvExportService.exportIssuesToCsv(issues);
+      return right(file);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     } catch (e) {

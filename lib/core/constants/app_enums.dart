@@ -1,1 +1,1 @@
-enum HomePageMenuAction { toggleTheme, signOut }
+enum HomePageMenuAction { toggleTheme, signOut, exportCsv }
