@@ -51,7 +51,6 @@ class IssueLocalDatasourceImpl implements IssueLocalDatasource {
           .toList();
 
       issues.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
       return issues;
     } catch (e) {
       throw ServerException(e.toString());

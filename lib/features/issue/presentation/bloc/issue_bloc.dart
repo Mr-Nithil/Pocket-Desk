@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
@@ -82,6 +84,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
         status: event.status,
         priority: event.priority,
         optionalAssignee: event.optionalAssignee,
+        image: event.image,
       ),
     );
 
@@ -114,6 +117,7 @@ class IssueBloc extends Bloc<IssueEvent, IssueState> {
         status: event.status,
         priority: event.priority,
         optionalAssignee: event.optionalAssignee,
+        image: event.image,
       ),
     );
 

@@ -10,6 +10,7 @@ class AddIssueEvent extends IssueEvent {
   final IssueStatus? status;
   final IssuePriority? priority;
   final String? optionalAssignee;
+  final File? image;
 
   AddIssueEvent({
     required this.userId,
@@ -18,6 +19,7 @@ class AddIssueEvent extends IssueEvent {
     required this.status,
     required this.priority,
     required this.optionalAssignee,
+    required this.image,
   });
 }
 
@@ -48,6 +50,7 @@ class UpdateIssueEvent extends IssueEvent {
   final IssueStatus? status;
   final IssuePriority? priority;
   final String? optionalAssignee;
+  final File? image;
 
   UpdateIssueEvent({
     required this.id,
@@ -57,6 +60,7 @@ class UpdateIssueEvent extends IssueEvent {
     required this.status,
     required this.priority,
     required this.optionalAssignee,
+    required this.image,
   });
 }
 

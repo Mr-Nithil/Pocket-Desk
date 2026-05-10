@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pocket_desk/core/cubits/theme_cubit.dart';
+import 'package:pocket_desk/core/services/image_storage_service.dart';
 import 'package:pocket_desk/features/auth/data/datasources/mock_auth_datasource.dart';
 import 'package:pocket_desk/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:pocket_desk/features/auth/domain/repository/auth_repository.dart';
@@ -32,9 +33,16 @@ Future<void> initDependencies() async {
 
   await _initHive();
 
+  _initCore();
   _initTheme();
   _initAuth();
   _initIssue();
+}
+
+void _initCore() {
+  serviceLocator.registerLazySingleton<ImageStorageService>(
+    () => ImageStorageServiceImpl(),
+  );
 }
 
 void _initTheme() {
@@ -93,7 +101,10 @@ void _initIssue() {
   );
 
   serviceLocator.registerLazySingleton<IssueRepository>(
-    () => IssueRepositoryImpl(issueLocalDatasource: serviceLocator()),
+    () => IssueRepositoryImpl(
+      issueLocalDatasource: serviceLocator(),
+      imageStorageService: serviceLocator(),
+    ),
   );
 
   serviceLocator.registerFactory(

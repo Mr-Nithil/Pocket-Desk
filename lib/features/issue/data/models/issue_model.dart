@@ -26,6 +26,8 @@ class IssueModel {
   final DateTime? updatedAt;
   @HiveField(8)
   final String? optionalAssignee;
+  @HiveField(9)
+  final String? imagePath;
 
   IssueModel({
     required this.id,
@@ -37,6 +39,7 @@ class IssueModel {
     required this.createdAt,
     this.updatedAt,
     this.optionalAssignee,
+    this.imagePath,
   });
 
   IssueModel copyWith({
@@ -49,6 +52,7 @@ class IssueModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? optionalAssignee,
+    String? imagePath,
   }) {
     return IssueModel(
       id: id ?? this.id,
@@ -60,6 +64,7 @@ class IssueModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       optionalAssignee: optionalAssignee ?? this.optionalAssignee,
+      imagePath: imagePath ?? this.imagePath,
     );
   }
 
@@ -74,6 +79,7 @@ class IssueModel {
       'createdAt': createdAt.millisecondsSinceEpoch,
       'updatedAt': updatedAt?.millisecondsSinceEpoch,
       'optionalAssignee': optionalAssignee,
+      'imagePath': imagePath,
     };
   }
 
@@ -94,6 +100,7 @@ class IssueModel {
       optionalAssignee: map['optionalAssignee'] != null
           ? map['optionalAssignee'] as String
           : null,
+      imagePath: map['imagePath'] != null ? map['imagePath'] as String : null,
     );
   }
 
@@ -104,7 +111,7 @@ class IssueModel {
 
   @override
   String toString() {
-    return 'Issue(id: $id, userId: $userId, title: $title, description: $description, status: $status, priority: $priority, createdAt: $createdAt, updatedAt: $updatedAt, optionalAssignee: $optionalAssignee)';
+    return 'Issue(id: $id, userId: $userId, title: $title, description: $description, status: $status, priority: $priority, createdAt: $createdAt, updatedAt: $updatedAt, optionalAssignee: $optionalAssignee, imagePath: $imagePath)';
   }
 
   @override
@@ -119,7 +126,8 @@ class IssueModel {
         other.priority == priority &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
-        other.optionalAssignee == optionalAssignee;
+        other.optionalAssignee == optionalAssignee &&
+        other.imagePath == imagePath;
   }
 
   @override
@@ -132,6 +140,7 @@ class IssueModel {
         priority.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^
-        optionalAssignee.hashCode;
+        optionalAssignee.hashCode ^
+        imagePath.hashCode;
   }
 }

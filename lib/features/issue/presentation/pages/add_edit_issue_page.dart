@@ -1,5 +1,10 @@
+import 'dart:io';
+
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pocket_desk/config/theme/color_palette.dart';
+import 'package:pocket_desk/core/utils/utils.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_priority.dart';
@@ -29,6 +34,8 @@ class _AddEditIssuePageState extends State<AddEditIssuePage> {
   IssuePriority _priority = IssuePriority.medium;
   IssueStatus _status = IssueStatus.open;
 
+  File? selectedImage;
+
   String? _userEmail;
 
   bool get isEditMode => widget.issue != null;
@@ -49,6 +56,19 @@ class _AddEditIssuePageState extends State<AddEditIssuePage> {
       _priority = issue.priority;
       _status = issue.status;
       _assigneeController.text = issue.optionalAssignee ?? '';
+
+      if (issue.imagePath != null && issue.imagePath!.isNotEmpty) {
+        selectedImage = File(issue.imagePath!);
+      }
+    }
+  }
+
+  void selectImage() async {
+    final pickedImage = await pickImage();
+    if (pickedImage != null) {
+      setState(() {
+        selectedImage = pickedImage;
+      });
     }
   }
 
@@ -92,7 +112,64 @@ class _AddEditIssuePageState extends State<AddEditIssuePage> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+
+                  Text(
+                    "IMAGE ATTACHMENT",
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  GestureDetector(
+                    onTap: selectImage,
+                    child: selectedImage != null
+                        ? SizedBox(
+                            height: 150,
+                            width: double.infinity,
+                            child: ClipRRect(
+                              borderRadius: BorderRadiusGeometry.circular(10),
+                              child: Image.file(
+                                selectedImage!,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          )
+                        : DottedBorder(
+                            options: RoundedRectDottedBorderOptions(
+                              color: ColorPalette.lightBorder,
+                              dashPattern: [10, 4],
+                              radius: Radius.circular(10),
+                              strokeCap: StrokeCap.round,
+                            ),
+                            child: SizedBox(
+                              height: 150,
+                              width: double.infinity,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.folder_open_outlined, size: 40),
+                                  SizedBox(height: 15),
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      30,
+                                      0,
+                                      30,
+                                      0,
+                                    ),
+                                    child: Text(
+                                      "You can attach an image related to the issue here.",
+                                      style: TextStyle(fontSize: 15),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                  ),
+
+                  const SizedBox(height: 20),
 
                   IssueTextField(
                     label: 'TITLE',
@@ -165,9 +242,13 @@ class _AddEditIssuePageState extends State<AddEditIssuePage> {
                           fontSize: 16,
                         ),
                       ),
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
                           if (isEditMode) {
+                            final isNewImage =
+                                selectedImage != null &&
+                                selectedImage!.path != widget.issue?.imagePath;
+
                             context.read<IssueBloc>().add(
                               UpdateIssueEvent(
                                 id: widget.issue!.id,
@@ -177,6 +258,7 @@ class _AddEditIssuePageState extends State<AddEditIssuePage> {
                                 status: _status,
                                 priority: _priority,
                                 optionalAssignee: _assigneeController.text,
+                                image: isNewImage ? selectedImage : null,
                               ),
                             );
                           } else {
@@ -188,6 +270,7 @@ class _AddEditIssuePageState extends State<AddEditIssuePage> {
                                 status: _status,
                                 priority: _priority,
                                 optionalAssignee: _assigneeController.text,
+                                image: selectedImage,
                               ),
                             );
                           }

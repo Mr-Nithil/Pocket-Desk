@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pocket_desk/config/theme/theme.dart';
 import 'package:pocket_desk/core/cubits/theme_cubit.dart';
-import 'package:pocket_desk/core/utils/loader.dart';
+import 'package:pocket_desk/core/widgets/loader.dart';
 import 'package:pocket_desk/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_desk/features/auth/presentation/pages/login_page.dart';
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';

@@ -26,13 +26,14 @@ class IssueModelAdapter extends TypeAdapter<IssueModel> {
       createdAt: fields[6] as DateTime,
       updatedAt: fields[7] as DateTime?,
       optionalAssignee: fields[8] as String?,
+      imagePath: fields[9] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, IssueModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class IssueModelAdapter extends TypeAdapter<IssueModel> {
       ..writeByte(7)
       ..write(obj.updatedAt)
       ..writeByte(8)
-      ..write(obj.optionalAssignee);
+      ..write(obj.optionalAssignee)
+      ..writeByte(9)
+      ..write(obj.imagePath);
   }
 
   @override

@@ -11,6 +11,7 @@ class Issue {
   final DateTime createdAt;
   final DateTime? updatedAt;
   final String? optionalAssignee;
+  final String? imagePath;
   Issue({
     required this.id,
     required this.userId,
@@ -21,10 +22,11 @@ class Issue {
     required this.createdAt,
     this.updatedAt,
     this.optionalAssignee,
+    this.imagePath,
   });
 
   @override
   String toString() {
-    return 'Issue(id: $id, userId: $userId, title: $title, description: $description, status: $status, priority: $priority, createdAt: $createdAt, updatedAt: $updatedAt, optionalAssignee: $optionalAssignee)';
+    return 'Issue(id: $id, userId: $userId, title: $title, description: $description, status: $status, priority: $priority, createdAt: $createdAt, updatedAt: $updatedAt, optionalAssignee: $optionalAssignee, imagePath: $imagePath)';
   }
 }

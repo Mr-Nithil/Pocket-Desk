@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:fpdart/src/either.dart';
 import 'package:pocket_desk/core/error/exception.dart';
 import 'package:pocket_desk/core/error/failure.dart';
+import 'package:pocket_desk/core/services/image_storage_service.dart';
 import 'package:pocket_desk/features/issue/data/datasources/issue_local_datasource.dart';
 import 'package:pocket_desk/features/issue/data/mappers/issue_mapper.dart';
 import 'package:pocket_desk/features/issue/data/models/issue_model.dart';
@@ -13,8 +16,12 @@ import 'package:pocket_desk/features/issue/domain/repository/issue_repository.da
 
 class IssueRepositoryImpl implements IssueRepository {
   final IssueLocalDatasource issueLocalDatasource;
+  final ImageStorageService imageStorageService;
 
-  IssueRepositoryImpl({required this.issueLocalDatasource});
+  IssueRepositoryImpl({
+    required this.issueLocalDatasource,
+    required this.imageStorageService,
+  });
 
   @override
   Future<Either<Failure, Issue>> addIssue({
@@ -24,6 +31,7 @@ class IssueRepositoryImpl implements IssueRepository {
     required IssueStatus? status,
     required IssuePriority? priority,
     required String? optionalAssignee,
+    required File? image,
   }) async {
     try {
       final allIssues = issueLocalDatasource.getIssues(userId);
@@ -38,6 +46,11 @@ class IssueRepositoryImpl implements IssueRepository {
       final nextCode = maxCode + 1;
       final issueId = 'IS-$nextCode';
 
+      String? imagePath;
+      if (image != null) {
+        imagePath = await imageStorageService.saveImage(image.path);
+      }
+
       final issue = IssueModel(
         id: issueId,
         userId: userId,
@@ -48,6 +61,7 @@ class IssueRepositoryImpl implements IssueRepository {
         optionalAssignee: optionalAssignee ?? "",
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        imagePath: imagePath,
       );
 
       final createdIssue = await issueLocalDatasource.addIssue(issue);
@@ -94,11 +108,21 @@ class IssueRepositoryImpl implements IssueRepository {
     required IssueStatus? status,
     required IssuePriority? priority,
     required String? optionalAssignee,
+    required File? image,
   }) async {
     try {
       final existingIssue = issueLocalDatasource
           .getIssues(userId)
           .firstWhere((issue) => issue.id == id);
+
+      String? imagePath = existingIssue.imagePath;
+
+      if (image != null) {
+        if (imagePath != null && imagePath.isNotEmpty) {
+          await imageStorageService.deleteImage(imagePath);
+        }
+        imagePath = await imageStorageService.saveImage(image.path);
+      }
 
       final updatedIssue = existingIssue.copyWith(
         title: title,
@@ -107,6 +131,7 @@ class IssueRepositoryImpl implements IssueRepository {
         priority: priority!.toData(),
         optionalAssignee: optionalAssignee,
         updatedAt: DateTime.now(),
+        imagePath: imagePath,
       );
 
       final result = await issueLocalDatasource.updateIssue(

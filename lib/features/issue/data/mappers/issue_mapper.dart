@@ -22,6 +22,7 @@ extension IssueModelMapper on IssueModel {
       createdAt: createdAt,
       updatedAt: updatedAt,
       optionalAssignee: optionalAssignee,
+      imagePath: imagePath,
     );
   }
 }
@@ -38,6 +39,7 @@ extension IssueEntityMapper on Issue {
       createdAt: createdAt,
       updatedAt: updatedAt,
       optionalAssignee: optionalAssignee,
+      imagePath: imagePath,
     );
   }
 }

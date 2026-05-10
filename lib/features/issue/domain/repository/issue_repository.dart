@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fpdart/fpdart.dart';
 import 'package:pocket_desk/core/error/failure.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
@@ -22,6 +24,7 @@ abstract interface class IssueRepository {
     required IssueStatus? status,
     required IssuePriority? priority,
     required String? optionalAssignee,
+    required File? image,
   });
   Future<Either<Failure, void>> deleteIssue({
     required String id,
@@ -35,5 +38,6 @@ abstract interface class IssueRepository {
     required IssueStatus? status,
     required IssuePriority? priority,
     required String? optionalAssignee,
+    required File? image,
   });
 }

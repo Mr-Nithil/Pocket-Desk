@@ -1,8 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:pocket_desk/config/theme/color_palette.dart';
-import 'package:pocket_desk/core/utils/app_confirm_dialog.dart';
+import 'package:pocket_desk/core/widgets/app_confirm_dialog.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue.dart';
 import 'package:pocket_desk/features/issue/domain/entities/issue_status.dart';
 import 'package:pocket_desk/features/issue/presentation/bloc/issue_bloc.dart';
@@ -110,6 +112,47 @@ class IssueViewPage extends StatelessWidget {
               ),
             ),
 
+            if (issue.imagePath != null && issue.imagePath!.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              SectionCard(
+                title: "IMAGE ATTACHMENT",
+                child: FutureBuilder<bool>(
+                  future: File(issue.imagePath!).exists(),
+                  builder: (context, snapshot) {
+                    if (snapshot.data == true) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(
+                          File(issue.imagePath!),
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 180,
+                              alignment: Alignment.center,
+                              child: const Text("Failed to load image"),
+                            );
+                          },
+                        ),
+                      );
+                    }
+
+                    return Container(
+                      height: 60,
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Image no longer available",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+
             const SizedBox(height: 20),
 
             SectionCard(
@@ -192,6 +235,7 @@ class IssueViewPage extends StatelessWidget {
                                     status: IssueStatus.resolved,
                                     priority: issue.priority,
                                     optionalAssignee: issue.optionalAssignee,
+                                    image: null,
                                   ),
                                 );
                               },
@@ -236,6 +280,7 @@ class IssueViewPage extends StatelessWidget {
                                     status: IssueStatus.closed,
                                     priority: issue.priority,
                                     optionalAssignee: issue.optionalAssignee,
+                                    image: null,
                                   ),
                                 );
                               },
@@ -244,7 +289,7 @@ class IssueViewPage extends StatelessWidget {
 
                     icon: const Icon(Icons.lock),
                     label: Text(
-                      issue.status == IssueStatus.resolved ? "Closed" : "Close",
+                      issue.status == IssueStatus.closed ? "Closed" : "Close",
                       style: TextStyle(fontSize: 10),
                     ),
                   ),

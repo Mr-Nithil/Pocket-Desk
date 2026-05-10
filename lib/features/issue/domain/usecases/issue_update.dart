@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fpdart/src/either.dart';
 import 'package:pocket_desk/core/error/failure.dart';
 import 'package:pocket_desk/core/usecases/usecase.dart';
@@ -20,6 +22,7 @@ class IssueUpdate implements UseCase<Issue, IssueUpdateParams> {
       status: params.status,
       priority: params.priority,
       optionalAssignee: params.optionalAssignee,
+      image: params.image,
     );
   }
 }
@@ -32,6 +35,7 @@ class IssueUpdateParams {
   final IssueStatus? status;
   final IssuePriority? priority;
   final String? optionalAssignee;
+  final File? image;
 
   IssueUpdateParams({
     required this.id,
@@ -41,5 +45,6 @@ class IssueUpdateParams {
     required this.status,
     required this.priority,
     required this.optionalAssignee,
+    required this.image,
   });
 }
