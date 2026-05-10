@@ -61,9 +61,20 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           Align(
                             alignment: Alignment.center,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints.tight(Size(100, 100)),
-                              child: Placeholder(),
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withOpacity(
+                                  0.12,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.workspaces_rounded,
+                                size: 52,
+                                color: theme.colorScheme.primary,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 15),
