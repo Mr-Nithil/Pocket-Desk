@@ -1,18 +1,149 @@
-# pocket_desk
+# PocketDesk - Mobile Issue Tracker
 
-A new Flutter project.
+PocketDesk is a mobile-first issue tracking app built to demonstrate practical Flutter architecture and reliable offline behavior. Users can authenticate, create and manage issues, track progress through status dashboards, and quickly find issues using search and filters.
 
-## Getting Started
+The app is designed for day-to-day usability:
 
-This project is a starting point for a Flutter application.
+- Fast local operations with Hive-backed persistence
+- Clear state transitions using BLoC and use-case driven logic
+- Reliable UX with loading, empty, and error handling states
+- Extra productivity features like CSV export and image attachments
 
-A few resources to get you started if this is your first Flutter project:
+This implementation follows a clean, layered structure (Data -> Domain -> Presentation) so features remain testable, maintainable, and easy to extend.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Features
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# Pocket-Desk
+**Core**
+
+- Authentication (email/password, test@test.com / password)
+- Create, read, update, delete issues
+- Dashboard with status counts
+- Search by title + filter by status/priority
+- Loading/empty/error states
+- Local persistence (Hive), no network needed
+- Pull-to-refresh
+
+**Bonus**
+
+- Dark & Light mode with persistent theme
+- CSV export with share functionality
+- Image attachments (local storage)
+- Reusable UI components
+- 4 test suites (CRUD, search, filter, export)
+- Clean Architecture (Data → Domain → Presentation)
+
+## Tech Stack
+
+| Component        | Tech                       |
+| ---------------- | -------------------------- |
+| Framework        | Flutter 3.11.5+            |
+| State Management | BLoC 9.1.1                 |
+| Database         | Hive 2.2.3                 |
+| DI               | GetIt 9.2.1                |
+| Export           | CSV, share_plus            |
+| Files            | file_picker, path_provider |
+
+## Setup
+
+```bash
+git clone <repository-url>
+cd pocket_desk
+flutter pub get
+flutter pub run build_runner build
+flutter run
+```
+
+## Architecture
+
+```
+Presentation (BLoC, Pages, Widgets)
+         ↓
+Domain (Entities, Use Cases, Repositories)
+         ↓
+Data (Models, DataSources, Repositories)
+```
+
+**Folder Structure:**
+
+```
+lib/
+├── config/              # Theme
+├── core/                # Shared services, cubits, widgets
+├── features/
+│   ├── auth/            # Login feature
+│   └── issue/           # Issue management feature
+├── init_dependencies.dart
+└── main.dart
+```
+
+## Key Implementation
+
+- **Offline-First**: All data in Hive, works completely offline
+- **BLoC**: Event-driven state with use cases
+- **Search/Filter**: Real-time by title, status, priority
+- **CSV Export**: Share issues as CSV
+- **Images**: File picker + local document storage
+- **Theme**: Persistent dark/light mode
+
+## Testing
+
+**4 Test Suites:**
+
+```
+✅ CRUD operations (create, read, update, delete)
+✅ Search functionality (title matching)
+✅ Filter functionality (status, priority)
+✅ CSV export (format validation)
+```
+
+Run tests:
+
+```bash
+flutter test                                    # All tests
+flutter test test/features/issue/issue_crud_test.dart  # Single file
+flutter test --coverage                        # With coverage
+```
+
+## Architecture Design Decisions
+
+| Choice             | Why                                           |
+| ------------------ | --------------------------------------------- |
+| BLoC               | Clear event flow, testable                    |
+| Hive               | Type-safe, no migrations, perfect for offline |
+| Clean Architecture | Testable, maintainable, scalable              |
+| GetIt              | Easy DI, explicit dependencies                |
+| CSV Export         | Shareable, Excel-compatible                   |
+
+## Status
+
+**100% Complete**
+
+- All core requirements implemented
+- All bonus features implemented
+- Production-ready with error handling
+- Fully tested and documented
+
+**Not Included** (by design):
+
+- Real backend API (mock only)
+- Cloud sync
+- Push notifications
+
+## Quick Commands
+
+```bash
+flutter pub run build_runner build   # Generate adapters
+flutter test                          # Run all tests
+flutter analyze                       # Code analysis
+flutter clean && flutter pub get      # Clean setup
+```
+
+## Troubleshooting
+
+- **Hive errors**: `flutter pub run build_runner clean` then rebuild
+- **Theme not persisting**: Check `init_dependencies()` called in main
+- **Test failures**: Regenerate adapters with `build_runner`
+
+---
+
+**Production-ready Flutter implementation** with all core and bonus features fully functional and tested.
