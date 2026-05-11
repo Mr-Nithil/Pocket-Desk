@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.pocket_desk"
+    namespace = "com.nithilsheshan.pocket_desk"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.pocket_desk"
+        applicationId = "com.nithilsheshan.pocket_desk"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

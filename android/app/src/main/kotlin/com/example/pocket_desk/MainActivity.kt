@@ -1,4 +1,4 @@
-package com.example.pocket_desk
+package com.nithilsheshan.pocket_desk
 
 import io.flutter.embedding.android.FlutterActivity
 
