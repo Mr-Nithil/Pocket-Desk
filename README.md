@@ -129,6 +129,36 @@ flutter clean && flutter pub get      # Clean setup
 - **Theme not persisting**: Check `init_dependencies()` called in main
 - **Test failures**: Regenerate adapters with `build_runner`
 
+## Screenshots
+
+**Light Mode**
+
+**Login and Home**
+![Login and home (light)](assets/screenshots/Login,%20Home%20-%20Light.png)
+
+**Add, Edit, Delete**
+![Add, edit, delete (light)](assets/screenshots/Add,edit,delete%20-%20light.png)
+
+**Detail View with Action Buttons**
+![Detail view with action buttons (light)](assets/screenshots/Detail%20view%20with%20action%20buttons%20-%20light.png)
+
+**Search and Filter**
+![Search and filter (light)](assets/screenshots/Search%20,%20Filter%20-%20light.png)
+
+**Dark Mode**
+
+**Login and Home**
+![Login and home (dark)](assets/screenshots/Login%20,%20home%20-%20dark.png)
+
+**Add, Edit, Delete**
+![Add, edit, delete (dark)](assets/screenshots/add,%20edit,%20delete%20-%20dark.png)
+
+**Detail View with Action**
+![Detail view with action (dark)](assets/screenshots/Detail%20view%20with%20action%20-%20dark.png)
+
+**Settings, Theme, CSV Export, Sign Out**
+![Settings, theme, CSV export, sign out](assets/screenshots/Settings,%20theme,%20csv%20export%20,%20signout.png)
+
 ---
 
 **Production-ready Flutter implementation** with all core and bonus features fully functional and tested.
